@@ -1,0 +1,172 @@
+import 'debug_bubble_config.dart';
+import 'debug_bubble_controller.dart';
+import 'debug_log_level.dart';
+
+/// Static facade providing easy access to the default toolkit controller.
+class DebugLog {
+  DebugLog._();
+
+  static DebugBubbleController? _defaultController;
+
+  /// Initializes the default controller with [config], replacing any existing default.
+  static DebugBubbleController init([
+    DebugBubbleConfig config = const DebugBubbleConfig(),
+  ]) {
+    _defaultController?.dispose();
+    final controller = DebugBubbleController(config: config);
+    _defaultController = controller;
+    return controller;
+  }
+
+  /// The active default controller, or null before [init] or after [dispose].
+  static DebugBubbleController? get controller => _defaultController;
+
+  /// Disposes and clears the active default controller.
+  static void dispose() {
+    _defaultController?.dispose();
+    _defaultController = null;
+  }
+
+  /// Records a log entry through the default controller.
+  static void log(
+    DebugLogLevel level,
+    String message, {
+    String? tag,
+    String? subTag,
+    Object? error,
+    StackTrace? stackTrace,
+    Map<String, Object?>? metadata,
+    Object? json,
+  }) {
+    _defaultController?.log(
+      level,
+      message,
+      tag: tag,
+      subTag: subTag,
+      error: error,
+      stackTrace: stackTrace,
+      metadata: metadata,
+      json: json,
+    );
+  }
+
+  /// Convenience logging method for [DebugLogLevel.debug].
+  static void debug(
+    String message, {
+    String? tag,
+    String? subTag,
+    Object? error,
+    StackTrace? stackTrace,
+    Map<String, Object?>? metadata,
+    Object? json,
+  }) => log(
+    DebugLogLevel.debug,
+    message,
+    tag: tag,
+    subTag: subTag,
+    error: error,
+    stackTrace: stackTrace,
+    metadata: metadata,
+    json: json,
+  );
+
+  /// Convenience logging method for [DebugLogLevel.info].
+  static void info(
+    String message, {
+    String? tag,
+    String? subTag,
+    Object? error,
+    StackTrace? stackTrace,
+    Map<String, Object?>? metadata,
+    Object? json,
+  }) => log(
+    DebugLogLevel.info,
+    message,
+    tag: tag,
+    subTag: subTag,
+    error: error,
+    stackTrace: stackTrace,
+    metadata: metadata,
+    json: json,
+  );
+
+  /// Convenience logging method for [DebugLogLevel.success].
+  static void success(
+    String message, {
+    String? tag,
+    String? subTag,
+    Object? error,
+    StackTrace? stackTrace,
+    Map<String, Object?>? metadata,
+    Object? json,
+  }) => log(
+    DebugLogLevel.success,
+    message,
+    tag: tag,
+    subTag: subTag,
+    error: error,
+    stackTrace: stackTrace,
+    metadata: metadata,
+    json: json,
+  );
+
+  /// Convenience logging method for [DebugLogLevel.warning].
+  static void warning(
+    String message, {
+    String? tag,
+    String? subTag,
+    Object? error,
+    StackTrace? stackTrace,
+    Map<String, Object?>? metadata,
+    Object? json,
+  }) => log(
+    DebugLogLevel.warning,
+    message,
+    tag: tag,
+    subTag: subTag,
+    error: error,
+    stackTrace: stackTrace,
+    metadata: metadata,
+    json: json,
+  );
+
+  /// Convenience logging method for [DebugLogLevel.error].
+  static void error(
+    String message, {
+    String? tag,
+    String? subTag,
+    Object? error,
+    StackTrace? stackTrace,
+    Map<String, Object?>? metadata,
+    Object? json,
+  }) => log(
+    DebugLogLevel.error,
+    message,
+    tag: tag,
+    subTag: subTag,
+    error: error,
+    stackTrace: stackTrace,
+    metadata: metadata,
+    json: json,
+  );
+
+  /// Convenience logging method for [DebugLogLevel.critical].
+  static void critical(
+    String message, {
+    String? tag,
+    String? subTag,
+    Object? error,
+    StackTrace? stackTrace,
+    Map<String, Object?>? metadata,
+    Object? json,
+  }) => log(
+    DebugLogLevel.critical,
+    message,
+    tag: tag,
+    subTag: subTag,
+    error: error,
+    stackTrace: stackTrace,
+    metadata: metadata,
+    json: json,
+  );
+}
