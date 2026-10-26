@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'debug_log_entry.dart';
 import 'debug_log_level.dart';
 
@@ -50,15 +52,35 @@ class DebugLogFilter {
     return true;
   }
 
+  /// Creates a copy of this filter with the given fields replaced.
+  ///
+  /// Set [clearTag] to `true` to explicitly reset [tag] to `null`.
   DebugLogFilter copyWith({
     Set<DebugLogLevel>? levels,
     String? query,
     String? tag,
+    bool clearTag = false,
   }) {
     return DebugLogFilter(
       levels: levels ?? this.levels,
       query: query ?? this.query,
-      tag: tag ?? this.tag,
+      tag: clearTag ? null : (tag ?? this.tag),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DebugLogFilter &&
+          runtimeType == other.runtimeType &&
+          setEquals(levels, other.levels) &&
+          query == other.query &&
+          tag == other.tag;
+
+  @override
+  int get hashCode => Object.hash(Object.hashAll(levels), query, tag);
+
+  @override
+  String toString() =>
+      'DebugLogFilter(levels: $levels, query: "$query", tag: $tag)';
 }

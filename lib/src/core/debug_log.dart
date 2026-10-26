@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'debug_bubble_config.dart';
 import 'debug_bubble_controller.dart';
 import 'debug_log_level.dart';
@@ -8,23 +10,32 @@ class DebugLog {
 
   static DebugBubbleController? _defaultController;
 
-  /// Initializes the default controller with [config], replacing any existing default.
+  /// Internal notifier that signals when the default controller changes,
+  /// is replaced, or is disposed. Used by [DebugBubble] to rebind automatically (L-6).
+  @internal
+  static final ValueNotifier<DebugBubbleController?> defaultControllerNotifier =
+      ValueNotifier<DebugBubbleController?>(null);
+
+  /// Initializes the default controller with [config], replacing and disposing
+  /// any existing default controller (L-3).
   static DebugBubbleController init([
     DebugBubbleConfig config = const DebugBubbleConfig(),
   ]) {
     _defaultController?.dispose();
     final controller = DebugBubbleController(config: config);
     _defaultController = controller;
+    defaultControllerNotifier.value = controller;
     return controller;
   }
 
   /// The active default controller, or null before [init] or after [dispose].
   static DebugBubbleController? get controller => _defaultController;
 
-  /// Disposes and clears the active default controller.
+  /// Disposes and clears the active default controller. Idempotent.
   static void dispose() {
     _defaultController?.dispose();
     _defaultController = null;
+    defaultControllerNotifier.value = null;
   }
 
   /// Records a log entry through the default controller.

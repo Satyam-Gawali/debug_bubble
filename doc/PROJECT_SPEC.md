@@ -70,23 +70,23 @@ Numeric values are **proposed defaults, not measured facts**. All limits are in 
 |---|---|---|---|
 | D-01 | Dashboard hosting | Proposed default; feasibility unverified (T3.1) | In-tree layer inside `DebugBubble`'s own `Stack`; no `Navigator`/`showDialog`; nested `Overlay` for text selection. |
 | D-02 | Integration point | Proposed default | `MaterialApp(builder: (c, child) => DebugBubble(child: child ?? const SizedBox.shrink()))`. |
-| D-03 | Lifecycle and ownership | **Pending approval** (re-`init` semantics) | Contract L-1…L-12: one default controller owned by `DebugLog`; `init` replaces and disposes the previous default; widgets never dispose. |
-| D-04 | Build-mode policy | **Pending approval** | Inert in release with **no release override in 0.1.0**; active in debug and profile; `enabled` can only switch the package off. |
+| D-03 | Lifecycle and ownership | Confirmed (Option A) | Contract L-1…L-12: one default controller owned by `DebugLog`; `init` replaces and disposes the previous default; widgets rebind automatically (L-6). |
+| D-04 | Build-mode policy | Confirmed (Option A) | Inert in release with **no release override in 0.1.0**; active in debug and profile; `enabled` can only switch the package off. |
 | D-05 | Redaction | Proposed default | At ingestion, before store/console/export; fail-closed; cannot be disabled in release; never described as guaranteed. |
 | D-06 | Entry-count bound | Proposed default | Ring buffer, `maxEntries` = 1,000. |
-| D-07 | Dependencies | **Pending approval** (Dio split); core deps proposed | Core: Flutter SDK only. Dio integration = separate package `debug_bubble_dio` in 0.2.x. |
-| D-08 | Uncaught-error capture | **Pending approval** | **Opt-in** (`captureUncaughtErrors` default `false`); single process-wide hook registry; chain, never swallow, restore when safe. |
+| D-07 | Dependencies | Confirmed | Core: Flutter SDK only. Dio integration = separate companion package `debug_bubble_dio` in 0.2.x. |
+| D-08 | Uncaught-error capture | Confirmed | **Opt-in** (`captureUncaughtErrors` default `false`); single process-wide hook registry; chain, never swallow, restore when safe. |
 | D-09 | *(Superseded by D-26 — export/copy/callback semantics)* | Superseded | See D-26. |
 | D-10 | Info tab | Proposed default | Read-only session snapshot incl. package version from a constant (D-25); no log content. |
 | D-11 | Level ordering | Proposed default | `debug(0) < info(1) < success(2) < warning(3) < error(4) < critical(5)`; `minLevel` gate uses this order. |
 | D-12 | Section/highlight helpers | Proposed default | Deferred beyond 0.1.0. |
 | D-13 | Persistence | Proposed default | None in 0.1.x; adapters in 0.3.x. |
 | D-14 | Platform support | **Pending approval**; verification in T4.5 | Android and iOS validated in the example; others best-effort and unverified. |
-| D-15 | SDK constraints | **Pending approval**; resolved in T1.1/T4.5 | Placeholder = current stable at T1.1; lowest supported version only after build verification. |
+| D-15 | SDK constraints | Confirmed placeholder | Placeholder `sdk: ^3.13.2` and `flutter: ">=3.47.0"`; lowest supported version confirmed after build verification in T4.5. |
 | D-16 | State management | Proposed default | `DebugBubbleController extends ChangeNotifier`; no state-management packages. |
 | D-17 | Theme | Proposed default | `DebugBubbleTheme` with `ThemeMode` (default `system`). |
 | D-18 | Notification rate | Proposed default | Listener notifications coalesced to at most one per frame (fallback: one per microtask when no binding). |
-| D-19 | License | **Pending approval** | MIT (assumption). |
+| D-19 | License | Confirmed | MIT License. |
 | D-20 | JSON conversion | Proposed default | Single budgeted traversal; never throws; valid JSON structure always preserved. |
 | D-21 | Per-entry payload budget | Proposed default | `maxEntryChars` = 40,000 combined; `maxMessageLength` = 8,000; `maxStackTraceLength` = 16,000; `maxPayloadLength` = 32,000 shared by metadata then json; internal caps: depth 8, 2,000 nodes, 200 items per collection, 2,000 chars per string value, 100 chars per tag/subTag. Retention priority: tag/subTag → message → error → stack trace → metadata → json. |
 | D-22 | Raw payload non-retention | Proposed default | Raw objects are never retained; one sanitized structure per entry; no cached pretty-JSON string; search excludes payload and stack trace. |

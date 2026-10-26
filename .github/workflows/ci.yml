@@ -20,7 +20,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Install dependencies
+      - name: Install package dependencies
         run: flutter pub get
 
       - name: Verify code formatting
@@ -29,11 +29,20 @@ jobs:
       - name: Analyze package
         run: flutter analyze
 
-      - name: Run unit tests
+      - name: Run package unit tests
         run: flutter test
+
+      - name: Install example dependencies
+        run: |
+          cd example
+          flutter pub get
 
       - name: Analyze example app
         run: |
           cd example
-          flutter pub get
           flutter analyze
+
+      - name: Run example app tests
+        run: |
+          cd example
+          flutter test

@@ -23,17 +23,26 @@ class DebugBubbleTheme {
   /// Custom per-level colors for indicator dots and tags.
   final Map<DebugLogLevel, Color>? levelColors;
 
+  /// Creates a copy of this theme with the given fields replaced.
+  ///
+  /// Set [clearBubbleColor], [clearBubbleIconColor], or [clearLevelColors] to
+  /// `true` to explicitly clear the respective property back to `null`.
   DebugBubbleTheme copyWith({
     ThemeMode? mode,
     Color? bubbleColor,
     Color? bubbleIconColor,
     Map<DebugLogLevel, Color>? levelColors,
+    bool clearBubbleColor = false,
+    bool clearBubbleIconColor = false,
+    bool clearLevelColors = false,
   }) {
     return DebugBubbleTheme(
       mode: mode ?? this.mode,
-      bubbleColor: bubbleColor ?? this.bubbleColor,
-      bubbleIconColor: bubbleIconColor ?? this.bubbleIconColor,
-      levelColors: levelColors ?? this.levelColors,
+      bubbleColor: clearBubbleColor ? null : (bubbleColor ?? this.bubbleColor),
+      bubbleIconColor: clearBubbleIconColor
+          ? null
+          : (bubbleIconColor ?? this.bubbleIconColor),
+      levelColors: clearLevelColors ? null : (levelColors ?? this.levelColors),
     );
   }
 }

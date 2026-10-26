@@ -11,5 +11,16 @@ class DebugErrorInfo {
   Map<String, Object?> toJson() => {'type': type, 'message': message};
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DebugErrorInfo &&
+          runtimeType == other.runtimeType &&
+          type == other.type &&
+          message == other.message;
+
+  @override
+  int get hashCode => Object.hash(type, message);
+
+  @override
   String toString() => '$type: $message';
 }

@@ -22,7 +22,11 @@ class DebugBubbleConfig {
     this.theme = const DebugBubbleTheme(),
     this.initialBubbleAlignment = Alignment.centerRight,
     this.onExport,
-  });
+  }) : assert(maxEntries >= 1, 'maxEntries must be >= 1'),
+       assert(maxEntryChars >= 1024, 'maxEntryChars must be >= 1024'),
+       assert(maxMessageLength >= 256, 'maxMessageLength must be >= 256'),
+       assert(maxStackTraceLength >= 256, 'maxStackTraceLength must be >= 256'),
+       assert(maxPayloadLength >= 256, 'maxPayloadLength must be >= 256');
 
   /// Master switch; can only turn the package off. Effective activity also requires non-release build mode.
   final bool enabled;
@@ -63,6 +67,9 @@ class DebugBubbleConfig {
   /// Optional host callback invoked when the user triggers an export.
   final FutureOr<void> Function(String json)? onExport;
 
+  /// Creates a copy of this config with the given fields replaced.
+  ///
+  /// Set [clearOnExport] to `true` to explicitly reset [onExport] to `null`.
   DebugBubbleConfig copyWith({
     bool? enabled,
     DebugLogLevel? minLevel,
@@ -77,6 +84,7 @@ class DebugBubbleConfig {
     DebugBubbleTheme? theme,
     Alignment? initialBubbleAlignment,
     FutureOr<void> Function(String json)? onExport,
+    bool clearOnExport = false,
   }) {
     return DebugBubbleConfig(
       enabled: enabled ?? this.enabled,
@@ -93,7 +101,7 @@ class DebugBubbleConfig {
       theme: theme ?? this.theme,
       initialBubbleAlignment:
           initialBubbleAlignment ?? this.initialBubbleAlignment,
-      onExport: onExport ?? this.onExport,
+      onExport: clearOnExport ? null : (onExport ?? this.onExport),
     );
   }
 }

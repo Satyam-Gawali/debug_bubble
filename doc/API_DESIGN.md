@@ -127,6 +127,7 @@ class DebugBubbleConfig {
     bool? consoleOutput, bool? captureUncaughtErrors, DebugRedactionConfig? redaction,
     DebugBubbleTheme? theme, Alignment? initialBubbleAlignment,
     FutureOr<void> Function(String json)? onExport,
+    bool clearOnExport = false,
   });
 }
 ```
@@ -200,6 +201,8 @@ class DebugBubbleTheme {
   DebugBubbleTheme copyWith({
     ThemeMode? mode, Color? bubbleColor, Color? bubbleIconColor,
     Map<DebugLogLevel, Color>? levelColors,
+    bool clearBubbleColor = false, bool clearBubbleIconColor = false,
+    bool clearLevelColors = false,
   });
 }
 ```
@@ -273,7 +276,7 @@ class DebugLogFilter {
   final Set<DebugLogLevel> levels; final String query; final String? tag;
   bool get isEmpty;
   bool matches(DebugLogEntry entry);
-  DebugLogFilter copyWith({Set<DebugLogLevel>? levels, String? query, String? tag});
+  DebugLogFilter copyWith({Set<DebugLogLevel>? levels, String? query, String? tag, bool clearTag = false});
 }
 ```
 

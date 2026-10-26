@@ -5,18 +5,20 @@ import 'debug_log_level.dart';
 class DebugLogEntry {
   DebugLogEntry({
     required this.id,
-    required this.timestamp,
+    required DateTime timestamp,
     required this.level,
     required this.message,
     this.tag,
     this.subTag,
     this.error,
     this.stackTrace,
-    this.metadata,
-    this.json,
+    Map<String, Object?>? metadata,
+    Object? json,
     this.isUncaught = false,
     this.truncated = false,
-  });
+  }) : timestamp = timestamp.toUtc(),
+       metadata = metadata != null ? Map.unmodifiable(metadata) : null,
+       json = _wrapUnmodifiable(json);
 
   /// Monotonic sequence ID per controller, starting at 1.
   final int id;
@@ -54,9 +56,21 @@ class DebugLogEntry {
   /// True if any budget or limit caused data to be cut or omitted.
   final bool truncated;
 
+  static Object? _wrapUnmodifiable(Object? value) {
+    if (value is Map) {
+      return Map<String, Object?>.unmodifiable(
+        value.map((k, v) => MapEntry(k.toString(), _wrapUnmodifiable(v))),
+      );
+    }
+    if (value is List) {
+      return List<Object?>.unmodifiable(value.map(_wrapUnmodifiable));
+    }
+    return value;
+  }
+
   Map<String, Object?> toJson() => {
     'id': id,
-    'timestamp': timestamp.toUtc().toIso8601String(),
+    'timestamp': timestamp.toIso8601String(),
     'level': level.name,
     'message': message,
     'tag': tag,
@@ -81,5 +95,5 @@ class DebugLogEntry {
 
   @override
   String toString() =>
-      'DebugLogEntry(#$id, ${level.name}, tag: $tag/$subTag, message: $message)';
+      'DebugLogEntry(#$id, ${level.name}, tag: ${tag ?? '-'}/${subTag ?? '-'}, message: $message)';
 }
