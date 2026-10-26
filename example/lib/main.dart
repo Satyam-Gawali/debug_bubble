@@ -229,7 +229,7 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 ActionChip(
-                  avatar: const Icon(Icons.dangerous, size: 16, color: Colors.purple),
+                  avatar: const Icon(Icons.dangerous, size: 16, color: Color(0xFFAF52DE)),
                   label: const Text('Critical'),
                   onPressed: () {
                     DebugLog.critical('Critical unrecoverable failure encountered', tag: 'Core');
@@ -425,7 +425,7 @@ class _LogEntryTile extends StatelessWidget {
       case DebugLogLevel.error:
         return Colors.red;
       case DebugLogLevel.critical:
-        return Colors.purple;
+        return const Color(0xFFAF52DE);
     }
   }
 

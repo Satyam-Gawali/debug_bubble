@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 
 import '../collectors/error_hook_registry.dart';
 import '../export/json_exporter.dart';
@@ -20,11 +22,41 @@ class DebugBubbleController extends ChangeNotifier {
       config: config,
       store: _store,
       isActiveGetter: () => isActive,
-      onEntryIngested: (_) => notifyListeners(),
+      onEntryIngested: (_) => _scheduleNotification(),
     );
     if (isActive && config.captureUncaughtErrors) {
       ErrorHookRegistry.instance.registerSink(this);
     }
+  }
+
+  bool _notificationScheduled = false;
+
+  void _scheduleNotification() {
+    if (_isDisposed || !isActive) return;
+
+    try {
+      final binding = SchedulerBinding.instance;
+      final phase = binding.schedulerPhase;
+      final inFrame = phase == SchedulerPhase.persistentCallbacks ||
+          phase == SchedulerPhase.midFrameMicrotasks;
+
+      if (inFrame) {
+        if (!_notificationScheduled) {
+          _notificationScheduled = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _notificationScheduled = false;
+            if (!_isDisposed && isActive) {
+              notifyListeners();
+            }
+          });
+        }
+        return;
+      }
+    } catch (_) {
+      // In isolated environments without a scheduler binding, fall through
+    }
+
+    notifyListeners();
   }
 
   /// The immutable configuration used by this controller.
@@ -153,6 +185,7 @@ class DebugBubbleController extends ChangeNotifier {
   void dispose() {
     if (_isDisposed) return;
     _isDisposed = true;
+    _notificationScheduled = false;
     _isDashboardOpen = false;
     ErrorHookRegistry.instance.unregisterSink(this);
     _store.clear();

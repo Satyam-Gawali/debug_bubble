@@ -39,6 +39,9 @@ class ErrorHookRegistry {
   FlutterExceptionHandler? _installedFlutterWrapper;
   ErrorCallback? _installedPlatformWrapper;
 
+  bool _isHandlingFlutterError = false;
+  bool _isHandlingPlatformError = false;
+
   /// Whether error hook wrappers are currently installed.
   bool get isInstalled =>
       _installedFlutterWrapper != null || _installedPlatformWrapper != null;
@@ -129,28 +132,37 @@ class ErrorHookRegistry {
   }
 
   void _handleFlutterError(FlutterErrorDetails details) {
-    if (_sinks.isNotEmpty) {
-      try {
-        String message;
+    if (_isHandlingFlutterError) {
+      _previousFlutterOnError?.call(details);
+      return;
+    }
+    _isHandlingFlutterError = true;
+    try {
+      if (_sinks.isNotEmpty) {
         try {
-          message = details.exceptionAsString();
-        } catch (_) {
-          message = 'FlutterError (${details.exception.runtimeType})';
-        }
+          String message;
+          try {
+            message = details.exceptionAsString();
+          } catch (_) {
+            message = 'FlutterError (${details.exception.runtimeType})';
+          }
 
-        for (final sink in _sinks) {
-          sink.logUncaught(
-            DebugLogLevel.error,
-            message,
-            tag: 'FlutterError',
-            subTag: details.library,
-            error: details.exception,
-            stackTrace: details.stack,
-          );
+          for (final sink in _sinks) {
+            sink.logUncaught(
+              DebugLogLevel.error,
+              message,
+              tag: 'FlutterError',
+              subTag: details.library,
+              error: details.exception,
+              stackTrace: details.stack,
+            );
+          }
+        } catch (_) {
+          // Internal failure isolation (NFR-03, E-9)
         }
-      } catch (_) {
-        // Internal failure isolation (NFR-03, E-9)
       }
+    } finally {
+      _isHandlingFlutterError = false;
     }
 
     // Always invoke previous handler outside our try/catch (E-3, E-9)
@@ -158,27 +170,35 @@ class ErrorHookRegistry {
   }
 
   bool _handlePlatformError(Object error, StackTrace stack) {
-    if (_sinks.isNotEmpty) {
-      try {
-        String message;
+    if (_isHandlingPlatformError) {
+      return _previousPlatformOnError?.call(error, stack) ?? false;
+    }
+    _isHandlingPlatformError = true;
+    try {
+      if (_sinks.isNotEmpty) {
         try {
-          message = error.toString();
-        } catch (_) {
-          message = 'PlatformError (${error.runtimeType})';
-        }
+          String message;
+          try {
+            message = error.toString();
+          } catch (_) {
+            message = 'PlatformError (${error.runtimeType})';
+          }
 
-        for (final sink in _sinks) {
-          sink.logUncaught(
-            DebugLogLevel.critical,
-            message,
-            tag: 'PlatformDispatcher',
-            error: error,
-            stackTrace: stack,
-          );
+          for (final sink in _sinks) {
+            sink.logUncaught(
+              DebugLogLevel.critical,
+              message,
+              tag: 'PlatformDispatcher',
+              error: error,
+              stackTrace: stack,
+            );
+          }
+        } catch (_) {
+          // Internal failure isolation (NFR-03, E-9)
         }
-      } catch (_) {
-        // Internal failure isolation (NFR-03, E-9)
       }
+    } finally {
+      _isHandlingPlatformError = false;
     }
 
     // Return previous handler result outside our try/catch; never return true on our own (E-4, E-9)
@@ -209,5 +229,7 @@ class ErrorHookRegistry {
     _previousPlatformOnError = null;
     _installedFlutterWrapper = null;
     _installedPlatformWrapper = null;
+    _isHandlingFlutterError = false;
+    _isHandlingPlatformError = false;
   }
 }
