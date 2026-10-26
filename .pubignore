@@ -1,0 +1,20 @@
+# Build and IDE artifacts
+build/
+**/build/
+.dart_tool/
+**/.dart_tool/
+*.iml
+.idea/
+.vscode/
+
+# Internal task planning and workflow documentation
+doc/tasks/
+doc/decisions/
+doc/AI_WORKFLOW.md
+
+# CI/CD Workflows
+.github/
+
+# Temporary and local files
+*.log
+*.tmp
