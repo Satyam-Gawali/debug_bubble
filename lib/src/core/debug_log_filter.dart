@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../filters/filter_matcher.dart';
 import 'debug_log_entry.dart';
 import 'debug_log_level.dart';
 
@@ -24,33 +25,7 @@ class DebugLogFilter {
   bool get isEmpty => levels.isEmpty && query.trim().isEmpty && tag == null;
 
   /// Tests whether [entry] satisfies all active filter criteria.
-  bool matches(DebugLogEntry entry) {
-    if (levels.isNotEmpty && !levels.contains(entry.level)) {
-      return false;
-    }
-    if (tag != null && entry.tag != tag) {
-      return false;
-    }
-    final trimmedQuery = query.trim().toLowerCase();
-    if (trimmedQuery.isNotEmpty) {
-      final inMessage = entry.message.toLowerCase().contains(trimmedQuery);
-      final inTag = entry.tag?.toLowerCase().contains(trimmedQuery) ?? false;
-      final inSubTag =
-          entry.subTag?.toLowerCase().contains(trimmedQuery) ?? false;
-      final inErrorType =
-          entry.error?.type.toLowerCase().contains(trimmedQuery) ?? false;
-      final inErrorMessage =
-          entry.error?.message.toLowerCase().contains(trimmedQuery) ?? false;
-      if (!inMessage &&
-          !inTag &&
-          !inSubTag &&
-          !inErrorType &&
-          !inErrorMessage) {
-        return false;
-      }
-    }
-    return true;
-  }
+  bool matches(DebugLogEntry entry) => FilterMatcher.matches(this, entry);
 
   /// Creates a copy of this filter with the given fields replaced.
   ///

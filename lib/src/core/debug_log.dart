@@ -16,12 +16,25 @@ class DebugLog {
   static final ValueNotifier<DebugBubbleController?> defaultControllerNotifier =
       ValueNotifier<DebugBubbleController?>(null);
 
+  static bool _warnedBeforeInit = false;
+
+  /// Resets the pre-init warning flag for testing.
+  @visibleForTesting
+  static void resetWarningFlag() {
+    _warnedBeforeInit = false;
+  }
+
   /// Initializes the default controller with [config], replacing and disposing
-  /// any existing default controller (L-3).
+  /// any existing default controller (L-3, D-03).
   static DebugBubbleController init([
     DebugBubbleConfig config = const DebugBubbleConfig(),
   ]) {
-    _defaultController?.dispose();
+    if (_defaultController != null) {
+      debugPrint(
+        '[debug_bubble] DebugLog.init() replaced an existing default controller (L-3, D-03).',
+      );
+      _defaultController!.dispose();
+    }
     final controller = DebugBubbleController(config: config);
     _defaultController = controller;
     defaultControllerNotifier.value = controller;
@@ -31,7 +44,7 @@ class DebugLog {
   /// The active default controller, or null before [init] or after [dispose].
   static DebugBubbleController? get controller => _defaultController;
 
-  /// Disposes and clears the active default controller. Idempotent.
+  /// Disposes and clears the active default controller. Idempotent (L-5, L-8).
   static void dispose() {
     _defaultController?.dispose();
     _defaultController = null;
@@ -49,7 +62,18 @@ class DebugLog {
     Map<String, Object?>? metadata,
     Object? json,
   }) {
-    _defaultController?.log(
+    if (_defaultController == null) {
+      if (!_warnedBeforeInit) {
+        _warnedBeforeInit = true;
+        debugPrint(
+          '[debug_bubble] DebugLog facade was called before DebugLog.init(). '
+          'Logs emitted before init are dropped (L-4, D-24).',
+        );
+      }
+      return;
+    }
+
+    _defaultController!.log(
       level,
       message,
       tag: tag,

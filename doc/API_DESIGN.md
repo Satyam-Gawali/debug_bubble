@@ -241,7 +241,7 @@ class DebugBubbleController extends ChangeNotifier {
 }
 ```
 
-Behavior: `log`, `clear`, `openDashboard`, `closeDashboard` never throw and are no-ops when inactive or disposed. `query` returns an empty list and the export methods return a valid zero-entry document when inactive or disposed. Listeners are notified at most once per frame (D-18). On `dispose()` listeners are notified once before the notifier is disposed so mounted UI can drop itself. Whether `removeListener` may be called after `dispose` is verified in T2.7; UI code must not rely on it.
+Behavior: `log`, `clear`, `openDashboard`, `closeDashboard` never throw and are no-ops when inactive or disposed. `query` returns an empty list and the export methods return a valid zero-entry document when inactive or disposed. Listeners are notified at most once per frame (D-18). On `dispose()` listeners are notified once before the notifier is disposed so mounted UI can drop itself. Whether `removeListener` may be called after `dispose` is verified in T2.6; UI code must not rely on it.
 
 ## 9. `DebugBubble`
 

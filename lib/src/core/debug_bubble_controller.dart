@@ -1,22 +1,37 @@
 import 'package:flutter/foundation.dart';
 
+import '../collectors/error_hook_registry.dart';
+import '../export/json_exporter.dart';
+import '../export/text_exporter.dart';
 import '../utils/build_mode.dart';
 import 'debug_bubble_config.dart';
 import 'debug_log_entry.dart';
 import 'debug_log_filter.dart';
 import 'debug_log_level.dart';
+import 'debug_log_service.dart';
 import 'debug_log_store.dart';
 
 /// State and log store manager for the debug bubble toolkit.
 class DebugBubbleController extends ChangeNotifier {
   /// Creates a standalone or default controller with the given [config].
   DebugBubbleController({this.config = const DebugBubbleConfig()})
-    : _store = DebugLogStore(maxEntries: config.maxEntries);
+    : _store = DebugLogStore(maxEntries: config.maxEntries) {
+    _service = DebugLogService(
+      config: config,
+      store: _store,
+      isActiveGetter: () => isActive,
+      onEntryIngested: (_) => notifyListeners(),
+    );
+    if (isActive && config.captureUncaughtErrors) {
+      ErrorHookRegistry.instance.registerSink(this);
+    }
+  }
 
   /// The immutable configuration used by this controller.
   final DebugBubbleConfig config;
 
   final DebugLogStore _store;
+  late final DebugLogService _service;
 
   /// Whether this controller is currently active (enabled, non-release mode, and not disposed).
   bool get isActive => !isDisposed && config.enabled && !BuildMode.isRelease;
@@ -43,9 +58,6 @@ class DebugBubbleController extends ChangeNotifier {
   bool _isDashboardOpen = false;
 
   /// Ingests a new log event into the pipeline.
-  ///
-  /// *Note: This is a Phase 1 scaffold stub. The full ingestion pipeline,*
-  /// *sanitization, redaction, and bounded store fan-out are scheduled for Phase 2.*
   void log(
     DebugLogLevel level,
     String message, {
@@ -57,7 +69,16 @@ class DebugBubbleController extends ChangeNotifier {
     Object? json,
   }) {
     if (!isActive) return;
-    // Intentional Phase 1 stub: logging pipeline is implemented in Phase 2 (T2.5).
+    _service.log(
+      level,
+      message,
+      tag: tag,
+      subTag: subTag,
+      error: error,
+      stackTrace: stackTrace,
+      metadata: metadata,
+      json: json,
+    );
   }
 
   /// Returns entries matching the given [filter].
@@ -73,22 +94,45 @@ class DebugBubbleController extends ChangeNotifier {
     notifyListeners();
   }
 
+  final JsonExporter _jsonExporter = const JsonExporter();
+  final TextExporter _textExporter = const TextExporter();
+
   /// Exports stored entries matching [filter] as a schema v1 JSON string.
-  ///
-  /// *Note: This is a Phase 1 scaffold stub. Full JSON export formatting is*
-  /// *scheduled for Phase 2 (T2.6).*
   String exportJson({DebugLogFilter filter = const DebugLogFilter()}) {
-    if (!isActive) return '';
-    return '';
+    if (BuildMode.isRelease) return '';
+    if (!isActive) {
+      return _jsonExporter.export(
+        entries: const <DebugLogEntry>[],
+        config: config,
+        totalEntries: 0,
+        droppedCount: 0,
+        filter: filter,
+      );
+    }
+    final filtered = query(filter);
+    return _jsonExporter.export(
+      entries: filtered,
+      config: config,
+      totalEntries: _store.length,
+      droppedCount: _store.droppedCount,
+      filter: filter,
+    );
   }
 
   /// Exports stored entries matching [filter] as formatted plain text.
-  ///
-  /// *Note: This is a Phase 1 scaffold stub. Full plain-text export formatting*
-  /// *is scheduled for Phase 2 (T2.6).*
   String exportText({DebugLogFilter filter = const DebugLogFilter()}) {
-    if (!isActive) return '';
-    return '';
+    if (BuildMode.isRelease) return '';
+    if (!isActive) {
+      return _textExporter.export(
+        entries: const <DebugLogEntry>[],
+        droppedCount: 0,
+      );
+    }
+    final filtered = query(filter);
+    return _textExporter.export(
+      entries: filtered,
+      droppedCount: _store.droppedCount,
+    );
   }
 
   /// Opens the dashboard overlay.
@@ -109,9 +153,49 @@ class DebugBubbleController extends ChangeNotifier {
   void dispose() {
     if (_isDisposed) return;
     _isDisposed = true;
+    _isDashboardOpen = false;
+    ErrorHookRegistry.instance.unregisterSink(this);
     _store.clear();
     // Notify listeners once so mounted observers know the controller is disposed (L-8)
     notifyListeners();
     super.dispose();
+  }
+
+  /// Ingests an uncaught error into this controller's service pipeline (E-3, E-4).
+  @internal
+  void logUncaught(
+    DebugLogLevel level,
+    String message, {
+    String? tag,
+    String? subTag,
+    Object? error,
+    StackTrace? stackTrace,
+    Map<String, Object?>? metadata,
+    Object? json,
+  }) {
+    if (!isActive) return;
+    _service.log(
+      level,
+      message,
+      tag: tag,
+      subTag: subTag,
+      error: error,
+      stackTrace: stackTrace,
+      metadata: metadata,
+      json: json,
+      isUncaught: true,
+    );
+  }
+
+  @override
+  void addListener(VoidCallback listener) {
+    if (_isDisposed) return;
+    super.addListener(listener);
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    if (_isDisposed) return;
+    super.removeListener(listener);
   }
 }
