@@ -107,7 +107,8 @@ class _DebugBubbleState extends State<DebugBubble> with WidgetsBindingObserver {
     try {
       final binding = SchedulerBinding.instance;
       final phase = binding.schedulerPhase;
-      final inFrame = phase == SchedulerPhase.persistentCallbacks ||
+      final inFrame =
+          phase == SchedulerPhase.persistentCallbacks ||
           phase == SchedulerPhase.midFrameMicrotasks;
 
       if (inFrame) {
@@ -132,7 +133,9 @@ class _DebugBubbleState extends State<DebugBubble> with WidgetsBindingObserver {
   @override
   Future<bool> didPopRoute() async {
     final controller = _effectiveController;
-    if (controller != null && controller.isActive && controller.isDashboardOpen) {
+    if (controller != null &&
+        controller.isActive &&
+        controller.isDashboardOpen) {
       if (_dashboardKey.currentState?.handleBack() == true) {
         return true; // Closed detail view
       }

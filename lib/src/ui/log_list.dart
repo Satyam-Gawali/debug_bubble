@@ -148,14 +148,14 @@ class _LogListViewState extends State<LogListView> {
   DebugLogFilter _buildCurrentFilter() {
     final effectiveLevels = widget.errorsOnly
         ? (_selectedLevels.isEmpty
-        ? const <DebugLogLevel>{DebugLogLevel.error, DebugLogLevel.critical}
-        : _selectedLevels.where((l) => l.isError).toSet())
+              ? const <DebugLogLevel>{
+                  DebugLogLevel.error,
+                  DebugLogLevel.critical,
+                }
+              : _selectedLevels.where((l) => l.isError).toSet())
         : _selectedLevels;
 
-    return DebugLogFilter(
-      levels: effectiveLevels,
-      query: _searchQuery,
-    );
+    return DebugLogFilter(levels: effectiveLevels, query: _searchQuery);
   }
 
   void _onSearchChanged(String text) {
@@ -248,8 +248,8 @@ class _LogListViewState extends State<LogListView> {
 
   Future<void> _copyEntryJson(DebugLogEntry entry) async {
     try {
-      final jsonStr =
-      const JsonEncoder.withIndent('  ').convert(entry.toJson());
+      final jsonStr = const JsonEncoder.withIndent('  ')
+          .convert(entry.toJson());
       await Clipboard.setData(ClipboardData(text: jsonStr));
       if (!mounted) return;
       _showFeedback('Copied JSON to clipboard');
@@ -267,7 +267,8 @@ class _LogListViewState extends State<LogListView> {
         final entries = _getFilteredEntries();
         final totalCount = widget.controller.entryCount;
         final droppedCount = widget.controller.droppedCount;
-        final hasActiveFilters = _searchQuery.isNotEmpty || _selectedLevels.isNotEmpty;
+        final hasActiveFilters =
+            _searchQuery.isNotEmpty || _selectedLevels.isNotEmpty;
 
         final isNewEntry = totalCount > _lastTotalEntryCount;
         if (isNewEntry) {
@@ -300,13 +301,13 @@ class _LogListViewState extends State<LogListView> {
                   child: entries.isEmpty
                       ? _buildEmptyState(totalCount, hasActiveFilters)
                       : ListView.builder(
-                    controller: _scrollController,
-                    itemCount: entries.length,
-                    itemBuilder: (context, index) {
-                      final entry = entries[index];
-                      return _buildEntryRow(entry);
-                    },
-                  ),
+                          controller: _scrollController,
+                          itemCount: entries.length,
+                          itemBuilder: (context, index) {
+                            final entry = entries[index];
+                            return _buildEntryRow(entry);
+                          },
+                        ),
                 ),
               ],
             ),
@@ -357,10 +358,10 @@ class _LogListViewState extends State<LogListView> {
           prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: _hasSearchText
               ? IconButton(
-            icon: const Icon(Icons.clear, size: 18),
-            tooltip: 'Clear search',
-            onPressed: _clearSearch,
-          )
+                  icon: const Icon(Icons.clear, size: 18),
+                  tooltip: 'Clear search',
+                  onPressed: _clearSearch,
+                )
               : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
@@ -368,8 +369,10 @@ class _LogListViewState extends State<LogListView> {
               color: Theme.of(context).dividerColor.withAlpha(50),
             ),
           ),
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 8,
+          ),
         ),
       ),
     );
@@ -408,53 +411,59 @@ class _LogListViewState extends State<LogListView> {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Row(
-        children: [
-          ...availableLevels.map((level) {
-            final isSelected = _selectedLevels.contains(level);
-            final color = _levelColor(level);
+            children: [
+              ...availableLevels.map((level) {
+                final isSelected = _selectedLevels.contains(level);
+                final color = _levelColor(level);
 
-            return Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: FilterChip(
-                selected: isSelected,
-                avatar: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: FilterChip(
+                    selected: isSelected,
+                    avatar: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    label: Text(
+                      level.name.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    onSelected: (_) => _toggleLevel(level),
+                  ),
+                );
+              }),
+              if (hasActiveFilters)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.close, size: 14),
+                    label: const Text(
+                      'Reset filters',
+                      style: TextStyle(fontSize: 11),
+                    ),
+                    onPressed: _resetFilters,
                   ),
                 ),
-                label: Text(
-                  level.name.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-                onSelected: (_) => _toggleLevel(level),
-              ),
-            );
-          }),
-          if (hasActiveFilters)
-            Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: TextButton.icon(
-                icon: const Icon(Icons.close, size: 14),
-                label: const Text('Reset filters', style: TextStyle(fontSize: 11)),
-                onPressed: _resetFilters,
-              ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
-    ),
-  ),
-);
+    );
   }
 
   Widget _buildCountsLine(int filteredCount, int totalCount, int droppedCount) {
     final theme = Theme.of(context);
-    final countText = 'Showing $filteredCount of $totalCount'
+    final countText =
+        'Showing $filteredCount of $totalCount'
         '${droppedCount > 0 ? " · $droppedCount older entries dropped" : ""}';
 
     return Container(
@@ -462,10 +471,7 @@ class _LogListViewState extends State<LogListView> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       child: Text(
         countText,
-        style: TextStyle(
-          fontSize: 11,
-          color: theme.textTheme.bodySmall?.color,
-        ),
+        style: TextStyle(fontSize: 11, color: theme.textTheme.bodySmall?.color),
       ),
     );
   }
@@ -544,12 +550,17 @@ class _LogListViewState extends State<LogListView> {
 
             if (willExpand) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted || !rowContext.mounted || _expandedEntryId != entry.id) return;
+                if (!mounted ||
+                    !rowContext.mounted ||
+                    _expandedEntryId != entry.id) {
+                  return;
+                }
                 Scrollable.ensureVisible(
                   rowContext,
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOutCubic,
-                  alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+                  alignmentPolicy:
+                      ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
                 );
               });
             }
@@ -559,9 +570,7 @@ class _LogListViewState extends State<LogListView> {
             decoration: BoxDecoration(
               color: isExpanded ? color.withAlpha(12) : null,
               border: Border(
-                bottom: BorderSide(
-                  color: theme.dividerColor.withAlpha(30),
-                ),
+                bottom: BorderSide(color: theme.dividerColor.withAlpha(30)),
               ),
             ),
             child: Column(
@@ -571,8 +580,10 @@ class _LogListViewState extends State<LogListView> {
                   children: [
                     // Level badge
                     Container(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1,
+                      ),
                       decoration: BoxDecoration(
                         color: color.withAlpha(25),
                         borderRadius: BorderRadius.circular(4),
@@ -601,8 +612,10 @@ class _LogListViewState extends State<LogListView> {
                     if (entry.tag != null || entry.subTag != null) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(3),
@@ -623,8 +636,10 @@ class _LogListViewState extends State<LogListView> {
                     ],
                     if (entry.truncated) ...[
                       Container(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 3,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withAlpha(30),
                           borderRadius: BorderRadius.circular(2),
@@ -668,12 +683,12 @@ class _LogListViewState extends State<LogListView> {
                   alignment: Alignment.topCenter,
                   child: isExpanded
                       ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 8),
-                      _buildExpandedDetails(entry, theme, color),
-                    ],
-                  )
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            _buildExpandedDetails(entry, theme, color),
+                          ],
+                        )
                       : const SizedBox.shrink(),
                 ),
               ],
@@ -685,10 +700,10 @@ class _LogListViewState extends State<LogListView> {
   }
 
   Widget _buildExpandedDetails(
-      DebugLogEntry entry,
-      ThemeData theme,
-      Color levelColor,
-      ) {
+    DebugLogEntry entry,
+    ThemeData theme,
+    Color levelColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -708,7 +723,11 @@ class _LogListViewState extends State<LogListView> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.error_outline, size: 14, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 14,
+                      color: Colors.red,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       entry.error!.type,
@@ -786,27 +805,29 @@ class _LogListViewState extends State<LogListView> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                ...entry.metadata!.entries.map((e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${e.key}: ',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
+                ...entry.metadata!.entries.map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${e.key}: ',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        child: SelectableText(
-                          '${e.value}',
-                          style: const TextStyle(fontSize: 11),
+                        Expanded(
+                          child: SelectableText(
+                            '${e.value}',
+                            style: const TextStyle(fontSize: 11),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
           ),

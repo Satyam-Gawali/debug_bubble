@@ -83,15 +83,10 @@ class DashboardOverlayState extends State<DashboardOverlay>
       curve: Curves.easeOut,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.05),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOut,
-      ),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
 
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
@@ -184,10 +179,7 @@ class DashboardOverlayState extends State<DashboardOverlay>
     return Positioned.fill(
       child: FadeTransition(
         opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: content,
-        ),
+        child: SlideTransition(position: _slideAnimation, child: content),
       ),
     );
   }
@@ -233,9 +225,7 @@ class DashboardOverlayState extends State<DashboardOverlay>
                   _errorsFilter = filter;
                 },
               ),
-              InfoTabView(
-                controller: widget.controller,
-              ),
+              InfoTabView(controller: widget.controller),
             ],
           ),
         ),
@@ -249,7 +239,8 @@ class DashboardOverlayState extends State<DashboardOverlay>
     final errors = controller.errorCount;
     final dropped = controller.droppedCount;
 
-    final stats = '$entries ${entries == 1 ? "entry" : "entries"} · '
+    final stats =
+        '$entries ${entries == 1 ? "entry" : "entries"} · '
         '$errors ${errors == 1 ? "error" : "errors"}'
         '${dropped > 0 ? " · $dropped dropped" : ""}';
 
@@ -258,9 +249,7 @@ class DashboardOverlayState extends State<DashboardOverlay>
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
-          bottom: BorderSide(
-            color: theme.dividerColor.withAlpha(40),
-          ),
+          bottom: BorderSide(color: theme.dividerColor.withAlpha(40)),
         ),
       ),
       child: Row(
@@ -272,10 +261,7 @@ class DashboardOverlayState extends State<DashboardOverlay>
               children: [
                 const Text(
                   'Debug Dashboard',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
@@ -327,8 +313,10 @@ class DashboardOverlayState extends State<DashboardOverlay>
                 if (errorCount > 0) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(10),

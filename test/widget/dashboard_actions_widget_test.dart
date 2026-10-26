@@ -14,16 +14,16 @@ void main() {
       clipboardContent = null;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-        if (call.method == 'Clipboard.setData') {
-          final data = call.arguments as Map<dynamic, dynamic>?;
-          clipboardContent = data?['text'] as String?;
-          return null;
-        }
-        if (call.method == 'Clipboard.getData') {
-          return <String, dynamic>{'text': clipboardContent};
-        }
-        return null;
-      });
+            if (call.method == 'Clipboard.setData') {
+              final data = call.arguments as Map<dynamic, dynamic>?;
+              clipboardContent = data?['text'] as String?;
+              return null;
+            }
+            if (call.method == 'Clipboard.getData') {
+              return <String, dynamic>{'text': clipboardContent};
+            }
+            return null;
+          });
     });
 
     tearDown(() {
@@ -31,19 +31,16 @@ void main() {
           .setMockMethodCallHandler(SystemChannels.platform, null);
     });
 
-    testWidgets('Overflow menu displays Copy all, Export JSON, and Clear all',
-        (tester) async {
+    testWidgets('Overflow menu displays Copy all, Export JSON, and Clear all', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.info, 'Message 1');
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(controller: controller),
-              ],
-            ),
+            body: Stack(children: [DashboardOverlay(controller: controller)]),
           ),
         ),
       );
@@ -59,111 +56,109 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Copy all copies filtered plain text to clipboard and shows feedback',
-        (tester) async {
-      final controller = DebugBubbleController();
-      controller.log(DebugLogLevel.info, 'Info entry');
-      controller.log(DebugLogLevel.error, 'Error entry');
+    testWidgets(
+      'Copy all copies filtered plain text to clipboard and shows feedback',
+      (tester) async {
+        final controller = DebugBubbleController();
+        controller.log(DebugLogLevel.info, 'Info entry');
+        controller.log(DebugLogLevel.error, 'Error entry');
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(controller: controller),
-              ],
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Stack(children: [DashboardOverlay(controller: controller)]),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.byTooltip('More actions'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('More actions'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Copy all'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Copy all'));
+        await tester.pumpAndSettle();
 
-      expect(clipboardContent, contains('Info entry'));
-      expect(clipboardContent, contains('Error entry'));
-      expect(find.text('Copied 2 entries'), findsOneWidget);
+        expect(clipboardContent, contains('Info entry'));
+        expect(clipboardContent, contains('Error entry'));
+        expect(find.text('Copied 2 entries'), findsOneWidget);
 
-      controller.dispose();
-    });
+        controller.dispose();
+      },
+    );
 
-    testWidgets('Export JSON invokes onExport callback and copies to clipboard',
-        (tester) async {
-      String? exportedPayload;
-      final config = DebugBubbleConfig(
-        onExport: (jsonStr) {
-          exportedPayload = jsonStr;
-        },
-      );
-      final controller = DebugBubbleController(config: config);
-      controller.log(DebugLogLevel.info, 'Entry for JSON export');
+    testWidgets(
+      'Export JSON invokes onExport callback and copies to clipboard',
+      (tester) async {
+        String? exportedPayload;
+        final config = DebugBubbleConfig(
+          onExport: (jsonStr) {
+            exportedPayload = jsonStr;
+          },
+        );
+        final controller = DebugBubbleController(config: config);
+        controller.log(DebugLogLevel.info, 'Entry for JSON export');
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(controller: controller),
-              ],
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Stack(children: [DashboardOverlay(controller: controller)]),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.byTooltip('More actions'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('More actions'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Export JSON'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Export JSON'));
+        await tester.pumpAndSettle();
 
-      expect(exportedPayload, isNotNull);
-      expect(exportedPayload, contains('Entry for JSON export'));
-      expect(clipboardContent, isNotNull);
-      expect(clipboardContent, contains('schemaVersion'));
-      expect(find.text('Exported JSON'), findsOneWidget);
+        expect(exportedPayload, isNotNull);
+        expect(exportedPayload, contains('Entry for JSON export'));
+        expect(clipboardContent, isNotNull);
+        expect(clipboardContent, contains('schemaVersion'));
+        expect(find.text('Exported JSON'), findsOneWidget);
 
-      controller.dispose();
-    });
+        controller.dispose();
+      },
+    );
 
-    testWidgets('Export JSON catches onExport callback failure and shows specific feedback',
-        (tester) async {
-      final config = DebugBubbleConfig(
-        onExport: (jsonStr) async {
-          throw FormatException('Simulated export network failure');
-        },
-      );
-      final controller = DebugBubbleController(config: config);
-      controller.log(DebugLogLevel.info, 'Sample entry');
+    testWidgets(
+      'Export JSON catches onExport callback failure and shows specific feedback',
+      (tester) async {
+        final config = DebugBubbleConfig(
+          onExport: (jsonStr) async {
+            throw FormatException('Simulated export network failure');
+          },
+        );
+        final controller = DebugBubbleController(config: config);
+        controller.log(DebugLogLevel.info, 'Sample entry');
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(controller: controller),
-              ],
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Stack(children: [DashboardOverlay(controller: controller)]),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.byTooltip('More actions'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('More actions'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Export JSON'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Export JSON'));
+        await tester.pumpAndSettle();
 
-      // UI_UX_SPEC §6: UI shows "Export callback failed (ExceptionType)"
-      expect(find.text('Export callback failed (FormatException)'), findsOneWidget);
+        // UI_UX_SPEC §6: UI shows "Export callback failed (ExceptionType)"
+        expect(
+          find.text('Export callback failed (FormatException)'),
+          findsOneWidget,
+        );
 
-      controller.dispose();
-    });
+        controller.dispose();
+      },
+    );
 
-    testWidgets('Clear all requires confirmation before clearing entries',
-        (tester) async {
+    testWidgets('Clear all requires confirmation before clearing entries', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.info, 'Info msg');
       controller.log(DebugLogLevel.error, 'Error msg');
@@ -172,11 +167,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(controller: controller),
-              ],
-            ),
+            body: Stack(children: [DashboardOverlay(controller: controller)]),
           ),
         ),
       );
@@ -198,7 +189,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(controller.entryCount, equals(2));
-      expect(find.text('Clear all 2 entries? This cannot be undone.'), findsNothing);
+      expect(
+        find.text('Clear all 2 entries? This cannot be undone.'),
+        findsNothing,
+      );
 
       // Tap Clear all again and confirm
       await tester.tap(find.byTooltip('More actions'));
@@ -216,8 +210,9 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Back button precedence: menu -> dialog -> detail -> close',
-        (tester) async {
+    testWidgets('Back button precedence: menu -> dialog -> detail -> close', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.info, 'Info msg');
 
@@ -227,9 +222,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: Stack(
-              children: [
-                DashboardOverlay(key: key, controller: controller),
-              ],
+              children: [DashboardOverlay(key: key, controller: controller)],
             ),
           ),
         ),

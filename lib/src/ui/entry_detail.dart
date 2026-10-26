@@ -64,8 +64,8 @@ class _EntryDetailViewState extends State<EntryDetailView> {
 
   Future<void> _copyJson() async {
     try {
-      final jsonStr =
-          const JsonEncoder.withIndent('  ').convert(widget.entry.toJson());
+      final jsonStr = const JsonEncoder.withIndent('  ')
+          .convert(widget.entry.toJson());
       await Clipboard.setData(ClipboardData(text: jsonStr));
       if (!mounted) return;
       _showFeedback('Copied JSON to clipboard');
@@ -306,7 +306,8 @@ class _EntryDetailViewState extends State<EntryDetailView> {
                 ],
 
                 // Stack trace section
-                if (entry.stackTrace != null && entry.stackTrace!.isNotEmpty) ...[
+                if (entry.stackTrace != null &&
+                    entry.stackTrace!.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _buildSection(
                     title: 'Stack Trace',
@@ -410,10 +411,7 @@ class _EntryDetailViewState extends State<EntryDetailView> {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             child,

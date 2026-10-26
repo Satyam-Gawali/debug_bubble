@@ -10,11 +10,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                FloatingBubble(controller: controller),
-              ],
-            ),
+            body: Stack(children: [FloatingBubble(controller: controller)]),
           ),
         ),
       );
@@ -41,11 +37,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                FloatingBubble(controller: controller),
-              ],
-            ),
+            body: Stack(children: [FloatingBubble(controller: controller)]),
           ),
         ),
       );
@@ -66,11 +58,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                FloatingBubble(controller: controller),
-              ],
-            ),
+            body: Stack(children: [FloatingBubble(controller: controller)]),
           ),
         ),
       );
@@ -81,7 +69,9 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Error badge displays formatted count when errors exist', (tester) async {
+    testWidgets('Error badge displays formatted count when errors exist', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.error, 'Error 1');
       controller.log(DebugLogLevel.critical, 'Critical 1');
@@ -89,11 +79,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                FloatingBubble(controller: controller),
-              ],
-            ),
+            body: Stack(children: [FloatingBubble(controller: controller)]),
           ),
         ),
       );
@@ -108,7 +94,9 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Error badge caps at 99+ when errorCount exceeds 99', (tester) async {
+    testWidgets('Error badge caps at 99+ when errorCount exceeds 99', (
+      tester,
+    ) async {
       final controller = DebugBubbleController(
         config: const DebugBubbleConfig(maxEntries: 200),
       );
@@ -119,11 +107,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                FloatingBubble(controller: controller),
-              ],
-            ),
+            body: Stack(children: [FloatingBubble(controller: controller)]),
           ),
         ),
       );
@@ -132,45 +116,42 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Dragging bubble updates position and snaps to nearest edge on release', (tester) async {
-      final controller = DebugBubbleController();
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Stack(
-              children: [
-                FloatingBubble(controller: controller),
-              ],
+    testWidgets(
+      'Dragging bubble updates position and snaps to nearest edge on release',
+      (tester) async {
+        final controller = DebugBubbleController();
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Stack(children: [FloatingBubble(controller: controller)]),
             ),
           ),
-        ),
-      );
+        );
 
-      final initialTopLeft = tester.getTopLeft(find.byType(FloatingBubble));
+        final initialTopLeft = tester.getTopLeft(find.byType(FloatingBubble));
 
-      // Drag bubble toward the left side of the screen
-      await tester.drag(find.byType(FloatingBubble), const Offset(-500, 50));
-      await tester.pumpAndSettle();
+        // Drag bubble toward the left side of the screen
+        await tester.drag(find.byType(FloatingBubble), const Offset(-500, 50));
+        await tester.pumpAndSettle();
 
-      final newTopLeft = tester.getTopLeft(find.byType(FloatingBubble));
-      // Should have snapped toward the left edge
-      expect(newTopLeft.dx < initialTopLeft.dx, isTrue);
+        final newTopLeft = tester.getTopLeft(find.byType(FloatingBubble));
+        // Should have snapped toward the left edge
+        expect(newTopLeft.dx < initialTopLeft.dx, isTrue);
 
-      controller.dispose();
-    });
+        controller.dispose();
+      },
+    );
 
-    testWidgets('Semantic label includes error count when errors exist', (tester) async {
+    testWidgets('Semantic label includes error count when errors exist', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.error, 'Error item');
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                FloatingBubble(controller: controller),
-              ],
-            ),
+            body: Stack(children: [FloatingBubble(controller: controller)]),
           ),
         ),
       );

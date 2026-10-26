@@ -138,9 +138,7 @@ void main() {
       expect(text.startsWith('\x1B[33m'), isTrue);
       expect(
         text,
-        contains(
-          '[2026-10-26T10:00:00.000Z] WARNING Network (#2) (truncated)',
-        ),
+        contains('[2026-10-26T10:00:00.000Z] WARNING Network (#2) (truncated)'),
       );
       expect(text.endsWith('\x1B[0m'), isTrue);
     });

@@ -48,8 +48,8 @@ class DashboardActions {
       return;
     }
 
-    final match =
-        RegExp(r'^debug_bubble log export — (\d+) entries').firstMatch(text);
+    final match = RegExp(r'^debug_bubble log export — (\d+) entries')
+        .firstMatch(text);
     final included = match != null
         ? (int.tryParse(match.group(1)!) ?? totalFiltered)
         : totalFiltered;
@@ -150,10 +150,7 @@ class ClearConfirmationDialog extends StatelessWidget {
           children: [
             const Text(
               'Clear logs',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
@@ -167,10 +164,7 @@ class ClearConfirmationDialog extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                  onPressed: onCancel,
-                  child: const Text('Cancel'),
-                ),
+                TextButton(onPressed: onCancel, child: const Text('Cancel')),
                 const SizedBox(width: 8),
                 FilledButton(
                   style: FilledButton.styleFrom(

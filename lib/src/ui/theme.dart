@@ -36,15 +36,14 @@ class DebugDashboardTheme {
       useMaterial3: true,
       brightness: isDark ? Brightness.dark : Brightness.light,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor:
-          isDark ? const Color(0xFF141218) : const Color(0xFFFEF7FF),
+      scaffoldBackgroundColor: isDark
+          ? const Color(0xFF141218)
+          : const Color(0xFFFEF7FF),
       cardTheme: CardThemeData(
         color: isDark ? const Color(0xFF1E1B24) : const Color(0xFFF7F2FA),
         elevation: 1,
         margin: const EdgeInsets.symmetric(vertical: 4),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       dividerTheme: DividerThemeData(
         color: isDark ? Colors.white12 : Colors.black12,

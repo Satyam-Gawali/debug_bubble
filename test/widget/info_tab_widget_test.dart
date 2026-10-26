@@ -11,7 +11,9 @@ void main() {
       ErrorHookRegistry.resetForTesting();
     });
 
-    testWidgets('Renders all required session fields and counts', (tester) async {
+    testWidgets('Renders all required session fields and counts', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -35,9 +37,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: InfoTabView(controller: controller),
-          ),
+          home: Scaffold(body: InfoTabView(controller: controller)),
         ),
       );
 
@@ -68,15 +68,14 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Updates counts dynamically when logs are added or cleared',
-        (tester) async {
+    testWidgets('Updates counts dynamically when logs are added or cleared', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: InfoTabView(controller: controller),
-          ),
+          home: Scaffold(body: InfoTabView(controller: controller)),
         ),
       );
 
@@ -95,84 +94,80 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Reflects uncaught error capture hook status: off, active, replaced',
-        (tester) async {
-      tester.view.physicalSize = const Size(800, 1200);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+    testWidgets(
+      'Reflects uncaught error capture hook status: off, active, replaced',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      // 1. Off when captureUncaughtErrors is false
-      final controllerOff = DebugBubbleController(
-        config: const DebugBubbleConfig(captureUncaughtErrors: false),
-      );
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: InfoTabView(controller: controllerOff),
+        // 1. Off when captureUncaughtErrors is false
+        final controllerOff = DebugBubbleController(
+          config: const DebugBubbleConfig(captureUncaughtErrors: false),
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(body: InfoTabView(controller: controllerOff)),
           ),
-        ),
-      );
-      expect(find.text('off'), findsOneWidget);
-      controllerOff.dispose();
+        );
+        expect(find.text('off'), findsOneWidget);
+        controllerOff.dispose();
 
-      // 2. Active when captureUncaughtErrors is true
-      final controllerActive = DebugBubbleController(
-        config: const DebugBubbleConfig(captureUncaughtErrors: true),
-      );
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: InfoTabView(controller: controllerActive),
+        // 2. Active when captureUncaughtErrors is true
+        final controllerActive = DebugBubbleController(
+          config: const DebugBubbleConfig(captureUncaughtErrors: true),
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(body: InfoTabView(controller: controllerActive)),
           ),
-        ),
-      );
-      expect(find.text('active'), findsOneWidget);
+        );
+        expect(find.text('active'), findsOneWidget);
 
-      // 3. Inactive (handler replaced) when external handler replaces FlutterError.onError
-      final originalFlutterOnError = FlutterError.onError;
-      FlutterError.onError = (details) {};
+        // 3. Inactive (handler replaced) when external handler replaces FlutterError.onError
+        final originalFlutterOnError = FlutterError.onError;
+        FlutterError.onError = (details) {};
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: InfoTabView(controller: controllerActive),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(body: InfoTabView(controller: controllerActive)),
           ),
-        ),
-      );
-      expect(find.text('inactive (handler replaced)'), findsOneWidget);
+        );
+        expect(find.text('inactive (handler replaced)'), findsOneWidget);
 
-      // Restore
-      FlutterError.onError = originalFlutterOnError;
-      controllerActive.dispose();
-    });
+        // Restore
+        FlutterError.onError = originalFlutterOnError;
+        controllerActive.dispose();
+      },
+    );
 
-    testWidgets('Security guarantee: does not display log contents or redaction patterns',
-        (tester) async {
-      const sensitiveSecret = 'SUPER_SECRET_TOKEN_DO_NOT_LEAK';
-      const secretPattern = r'secret_pattern_\d+';
+    testWidgets(
+      'Security guarantee: does not display log contents or redaction patterns',
+      (tester) async {
+        const sensitiveSecret = 'SUPER_SECRET_TOKEN_DO_NOT_LEAK';
+        const secretPattern = r'secret_pattern_\d+';
 
-      final config = DebugBubbleConfig(
-        redaction: DebugRedactionConfig(
-          enabled: true,
-          valuePatterns: [RegExp(secretPattern)],
-        ),
-      );
-      final controller = DebugBubbleController(config: config);
-      controller.log(DebugLogLevel.info, 'Message with $sensitiveSecret');
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: InfoTabView(controller: controller),
+        final config = DebugBubbleConfig(
+          redaction: DebugRedactionConfig(
+            enabled: true,
+            valuePatterns: [RegExp(secretPattern)],
           ),
-        ),
-      );
+        );
+        final controller = DebugBubbleController(config: config);
+        controller.log(DebugLogLevel.info, 'Message with $sensitiveSecret');
 
-      expect(find.textContaining(sensitiveSecret), findsNothing);
-      expect(find.textContaining(secretPattern), findsNothing);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(body: InfoTabView(controller: controller)),
+          ),
+        );
 
-      controller.dispose();
-    });
+        expect(find.textContaining(sensitiveSecret), findsNothing);
+        expect(find.textContaining(secretPattern), findsNothing);
+
+        controller.dispose();
+      },
+    );
   });
 }

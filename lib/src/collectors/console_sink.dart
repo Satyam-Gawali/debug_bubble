@@ -9,10 +9,7 @@ import '../export/text_exporter.dart';
 /// Implements guarded formatting per DATA_MODELS.md §9 and emits to [debugPrint]
 /// or a configured [outputCallback] exactly once per entry.
 class ConsoleSink {
-  const ConsoleSink({
-    this.useColor = true,
-    this.outputCallback,
-  });
+  const ConsoleSink({this.useColor = true, this.outputCallback});
 
   /// Whether ANSI terminal colors are enabled by default.
   final bool useColor;

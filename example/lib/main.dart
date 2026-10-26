@@ -92,7 +92,8 @@ class _HomePageState extends State<HomePage> {
     final droppedCount = controller?.droppedCount ?? 0;
     final isActive = controller?.isActive ?? false;
     final isDashboardOpen = controller?.isDashboardOpen ?? false;
-    final recentEntries = controller?.entries.reversed.take(5).toList() ??
+    final recentEntries =
+        controller?.entries.reversed.take(5).toList() ??
         const <DebugLogEntry>[];
 
     return Scaffold(
@@ -190,7 +191,11 @@ class _HomePageState extends State<HomePage> {
               runSpacing: 8,
               children: [
                 ActionChip(
-                  avatar: const Icon(Icons.bug_report, size: 16, color: Colors.grey),
+                  avatar: const Icon(
+                    Icons.bug_report,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
                   label: const Text('Debug'),
                   onPressed: () {
                     DebugLog.debug('Verbose debug event emitted', tag: 'UI');
@@ -204,17 +209,31 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 ActionChip(
-                  avatar: const Icon(Icons.check_circle, size: 16, color: Colors.green),
+                  avatar: const Icon(
+                    Icons.check_circle,
+                    size: 16,
+                    color: Colors.green,
+                  ),
                   label: const Text('Success'),
                   onPressed: () {
-                    DebugLog.success('Operation completed successfully', tag: 'Sync');
+                    DebugLog.success(
+                      'Operation completed successfully',
+                      tag: 'Sync',
+                    );
                   },
                 ),
                 ActionChip(
-                  avatar: const Icon(Icons.warning, size: 16, color: Colors.amber),
+                  avatar: const Icon(
+                    Icons.warning,
+                    size: 16,
+                    color: Colors.amber,
+                  ),
                   label: const Text('Warning'),
                   onPressed: () {
-                    DebugLog.warning('Cache limit reaching threshold', tag: 'Storage');
+                    DebugLog.warning(
+                      'Cache limit reaching threshold',
+                      tag: 'Storage',
+                    );
                   },
                 ),
                 ActionChip(
@@ -229,10 +248,17 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 ActionChip(
-                  avatar: const Icon(Icons.dangerous, size: 16, color: Color(0xFFAF52DE)),
+                  avatar: const Icon(
+                    Icons.dangerous,
+                    size: 16,
+                    color: Color(0xFFAF52DE),
+                  ),
                   label: const Text('Critical'),
                   onPressed: () {
-                    DebugLog.critical('Critical unrecoverable failure encountered', tag: 'Core');
+                    DebugLog.critical(
+                      'Critical unrecoverable failure encountered',
+                      tag: 'Core',
+                    );
                   },
                 ),
               ],
@@ -264,7 +290,9 @@ class _HomePageState extends State<HomePage> {
                   label: const Text('Log Handled Exception'),
                   onPressed: () {
                     try {
-                      throw const FormatException('Simulated parsing error in response body');
+                      throw const FormatException(
+                        'Simulated parsing error in response body',
+                      );
                     } catch (e, st) {
                       DebugLog.error(
                         'Handled parsing exception',
@@ -281,9 +309,13 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () {
                     FlutterError.reportError(
                       FlutterErrorDetails(
-                        exception: Exception('Simulated uncaught Flutter error'),
+                        exception: Exception(
+                          'Simulated uncaught Flutter error',
+                        ),
                         library: 'debug_bubble_example',
-                        context: ErrorDescription('testing uncaught error hook'),
+                        context: ErrorDescription(
+                          'testing uncaught error hook',
+                        ),
                       ),
                     );
                   },
@@ -348,7 +380,10 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.symmetric(vertical: 12.0),
                 child: Text(
                   'No log entries yet. Tap a button above to generate logs.',
-                  style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               )
             else
@@ -457,21 +492,18 @@ class _LogEntryTile extends StatelessWidget {
             ),
           ),
         ),
-        title: Text(
-          entry.message,
-          style: const TextStyle(fontSize: 13),
-        ),
+        title: Text(entry.message, style: const TextStyle(fontSize: 13)),
         subtitle: entry.tag != null
             ? Text(
                 'Tag: ${entry.tag}${entry.error != null ? ' | Error: ${entry.error!.message}' : ''}',
                 style: const TextStyle(fontSize: 11),
               )
             : (entry.error != null
-                ? Text(
-                    'Error: ${entry.error!.message}',
-                    style: const TextStyle(fontSize: 11),
-                  )
-                : null),
+                  ? Text(
+                      'Error: ${entry.error!.message}',
+                      style: const TextStyle(fontSize: 11),
+                    )
+                  : null),
         trailing: Text(
           '#${entry.id}',
           style: const TextStyle(fontSize: 11, color: Colors.grey),

@@ -5,7 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('DashboardOverlay Widget Tests (T3.3, UI_UX_SPEC §2)', () {
-    testWidgets('Renders top bar with title, stats, and close button', (tester) async {
+    testWidgets('Renders top bar with title, stats, and close button', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.info, 'Info msg 1');
       controller.log(DebugLogLevel.error, 'Error msg 1');
@@ -13,11 +15,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(controller: controller),
-              ],
-            ),
+            body: Stack(children: [DashboardOverlay(controller: controller)]),
           ),
         ),
       );
@@ -37,11 +35,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(controller: controller),
-              ],
-            ),
+            body: Stack(children: [DashboardOverlay(controller: controller)]),
           ),
         ),
       );
@@ -53,18 +47,16 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Renders TabBar with Logs, Errors, and Info tabs', (tester) async {
+    testWidgets('Renders TabBar with Logs, Errors, and Info tabs', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.error, 'Err 1');
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(controller: controller),
-              ],
-            ),
+            body: Stack(children: [DashboardOverlay(controller: controller)]),
           ),
         ),
       );
@@ -74,7 +66,10 @@ void main() {
       expect(find.text('Info'), findsOneWidget);
 
       // Errors tab shows badge
-      expect(find.descendant(of: find.byType(TabBar), matching: find.text('1')), findsOneWidget);
+      expect(
+        find.descendant(of: find.byType(TabBar), matching: find.text('1')),
+        findsOneWidget,
+      );
 
       // Tap on Info tab
       await tester.tap(find.text('Info'));
@@ -94,11 +89,7 @@ void main() {
           data: const MediaQueryData(disableAnimations: true),
           child: MaterialApp(
             home: Scaffold(
-              body: Stack(
-                children: [
-                  DashboardOverlay(controller: controller),
-                ],
-              ),
+              body: Stack(children: [DashboardOverlay(controller: controller)]),
             ),
           ),
         ),

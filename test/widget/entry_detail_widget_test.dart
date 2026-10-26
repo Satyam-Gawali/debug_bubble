@@ -10,16 +10,18 @@ void main() {
     setUp(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-        if (call.method == 'Clipboard.setData') return null;
-        return null;
-      });
+            if (call.method == 'Clipboard.setData') return null;
+            return null;
+          });
     });
 
     tearDown(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, null);
     });
-    testWidgets('Renders all entry fields, headers, and truncation warning', (tester) async {
+    testWidgets('Renders all entry fields, headers, and truncation warning', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -45,10 +47,7 @@ void main() {
       var backed = false;
       await tester.pumpWidget(
         MaterialApp(
-          home: EntryDetailView(
-            entry: entry,
-            onBack: () => backed = true,
-          ),
+          home: EntryDetailView(entry: entry, onBack: () => backed = true),
         ),
       );
 
@@ -59,7 +58,10 @@ void main() {
       expect(find.text('Tag: '), findsOneWidget);
       expect(find.text('Database/Sync'), findsOneWidget);
       expect(find.text('UTC: 2026-10-26T12:00:00.000Z'), findsOneWidget);
-      expect(find.text('Some content was truncated due to entry size limits.'), findsOneWidget);
+      expect(
+        find.text('Some content was truncated due to entry size limits.'),
+        findsOneWidget,
+      );
 
       // Message
       expect(find.text('Message'), findsOneWidget);
@@ -87,31 +89,34 @@ void main() {
       expect(backed, isTrue);
     });
 
-    testWidgets('Omits absent fields cleanly and hides truncation warning when false', (tester) async {
-      final entry = DebugLogEntry(
-        id: 1,
-        timestamp: DateTime.utc(2026, 10, 26, 12, 0, 0),
-        level: DebugLogLevel.info,
-        message: 'Minimal log message',
-        truncated: false,
-      );
+    testWidgets(
+      'Omits absent fields cleanly and hides truncation warning when false',
+      (tester) async {
+        final entry = DebugLogEntry(
+          id: 1,
+          timestamp: DateTime.utc(2026, 10, 26, 12, 0, 0),
+          level: DebugLogLevel.info,
+          message: 'Minimal log message',
+          truncated: false,
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: EntryDetailView(
-            entry: entry,
-            onBack: () {},
+        await tester.pumpWidget(
+          MaterialApp(
+            home: EntryDetailView(entry: entry, onBack: () {}),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Minimal log message'), findsOneWidget);
-      expect(find.text('Error Details'), findsNothing);
-      expect(find.text('Stack Trace'), findsNothing);
-      expect(find.text('Metadata'), findsNothing);
-      expect(find.text('JSON Payload'), findsNothing);
-      expect(find.text('Some content was truncated due to entry size limits.'), findsNothing);
-    });
+        expect(find.text('Minimal log message'), findsOneWidget);
+        expect(find.text('Error Details'), findsNothing);
+        expect(find.text('Stack Trace'), findsNothing);
+        expect(find.text('Metadata'), findsNothing);
+        expect(find.text('JSON Payload'), findsNothing);
+        expect(
+          find.text('Some content was truncated due to entry size limits.'),
+          findsNothing,
+        );
+      },
+    );
 
     testWidgets('Copy buttons display feedback banner', (tester) async {
       final entry = DebugLogEntry(
@@ -123,10 +128,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: EntryDetailView(
-            entry: entry,
-            onBack: () {},
-          ),
+          home: EntryDetailView(entry: entry, onBack: () {}),
         ),
       );
 
@@ -146,90 +148,96 @@ void main() {
       expect(find.text('Copied JSON to clipboard'), findsOneWidget);
     });
 
-    testWidgets('Clipboard failure displays "Copy failed" feedback without throwing', (tester) async {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(SystemChannels.platform, (MethodCall call) async {
-        if (call.method == 'Clipboard.setData') {
-          throw Exception('Simulated clipboard permission denied');
-        }
-        return null;
-      });
+    testWidgets(
+      'Clipboard failure displays "Copy failed" feedback without throwing',
+      (tester) async {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, (
+              MethodCall call,
+            ) async {
+              if (call.method == 'Clipboard.setData') {
+                throw Exception('Simulated clipboard permission denied');
+              }
+              return null;
+            });
 
-      final entry = DebugLogEntry(
-        id: 8,
-        timestamp: DateTime.utc(2026, 10, 26, 12, 0, 0),
-        level: DebugLogLevel.error,
-        message: 'Error to copy with failing clipboard',
-      );
+        final entry = DebugLogEntry(
+          id: 8,
+          timestamp: DateTime.utc(2026, 10, 26, 12, 0, 0),
+          level: DebugLogLevel.error,
+          message: 'Error to copy with failing clipboard',
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: EntryDetailView(
-            entry: entry,
-            onBack: () {},
+        await tester.pumpWidget(
+          MaterialApp(
+            home: EntryDetailView(entry: entry, onBack: () {}),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.byTooltip('Copy entry text'));
-      await tester.pump();
-      expect(find.text('Copy failed'), findsOneWidget);
+        await tester.tap(find.byTooltip('Copy entry text'));
+        await tester.pump();
+        expect(find.text('Copy failed'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Copy JSON'));
-      await tester.pump();
-      expect(find.text('Copy failed'), findsOneWidget);
+        await tester.tap(find.byTooltip('Copy JSON'));
+        await tester.pump();
+        expect(find.text('Copy failed'), findsOneWidget);
 
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(SystemChannels.platform, null);
-    });
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null);
+      },
+    );
 
-    testWidgets('DashboardOverlay navigation: tapping row opens details and back returns to list', (tester) async {
-      final controller = DebugBubbleController();
-      controller.log(DebugLogLevel.info, 'Selectable message', tag: 'NavTest');
-      controller.openDashboard();
+    testWidgets(
+      'DashboardOverlay navigation: tapping row opens details and back returns to list',
+      (tester) async {
+        final controller = DebugBubbleController();
+        controller.log(
+          DebugLogLevel.info,
+          'Selectable message',
+          tag: 'NavTest',
+        );
+        controller.openDashboard();
 
-      final dashboardKey = GlobalKey<DashboardOverlayState>();
+        final dashboardKey = GlobalKey<DashboardOverlayState>();
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Stack(
-              children: [
-                DashboardOverlay(
-                  key: dashboardKey,
-                  controller: controller,
-                ),
-              ],
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Stack(
+                children: [
+                  DashboardOverlay(key: dashboardKey, controller: controller),
+                ],
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Verify log row is visible
-      expect(find.text('Selectable message'), findsOneWidget);
-      expect(find.byType(EntryDetailView), findsNothing);
+        // Verify log row is visible
+        expect(find.text('Selectable message'), findsOneWidget);
+        expect(find.byType(EntryDetailView), findsNothing);
 
-      // Tap on row to expand inline, then tap Open full page
-      await tester.tap(find.text('Selectable message'));
-      await tester.pumpAndSettle();
+        // Tap on row to expand inline, then tap Open full page
+        await tester.tap(find.text('Selectable message'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Open full page'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('Open full page'));
+        await tester.pumpAndSettle();
 
-      // Detail view is now displayed
-      expect(find.byType(EntryDetailView), findsOneWidget);
-      expect(find.text('Entry #1'), findsOneWidget);
+        // Detail view is now displayed
+        expect(find.byType(EntryDetailView), findsOneWidget);
+        expect(find.text('Entry #1'), findsOneWidget);
 
-      // System back handler closes detail view first
-      final handled = dashboardKey.currentState?.handleBack();
-      expect(handled, isTrue);
-      await tester.pumpAndSettle();
+        // System back handler closes detail view first
+        final handled = dashboardKey.currentState?.handleBack();
+        expect(handled, isTrue);
+        await tester.pumpAndSettle();
 
-      // Back to log list
-      expect(find.byType(EntryDetailView), findsNothing);
-      expect(find.text('Selectable message'), findsOneWidget);
+        // Back to log list
+        expect(find.byType(EntryDetailView), findsNothing);
+        expect(find.text('Selectable message'), findsOneWidget);
 
-      controller.dispose();
-    });
+        controller.dispose();
+      },
+    );
   });
 }

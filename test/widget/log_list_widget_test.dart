@@ -5,7 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('LogListView Widget Tests (T3.4, UI_UX_SPEC §3)', () {
-    testWidgets('Renders empty state when controller has no entries', (tester) async {
+    testWidgets('Renders empty state when controller has no entries', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
 
       await tester.pumpWidget(
@@ -26,7 +28,9 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Renders log entries with badges, tags, and timestamps', (tester) async {
+    testWidgets('Renders log entries with badges, tags, and timestamps', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(
         DebugLogLevel.info,
@@ -34,11 +38,7 @@ void main() {
         tag: 'App',
         subTag: 'Init',
       );
-      controller.log(
-        DebugLogLevel.warning,
-        'Cache low memory',
-        tag: 'Storage',
-      );
+      controller.log(DebugLogLevel.warning, 'Cache low memory', tag: 'Storage');
 
       await tester.pumpWidget(
         MaterialApp(
@@ -55,10 +55,7 @@ void main() {
       expect(find.text('Application started'), findsOneWidget);
       expect(find.text('Cache low memory'), findsOneWidget);
       expect(
-        find.descendant(
-          of: find.byType(ListView),
-          matching: find.text('INFO'),
-        ),
+        find.descendant(of: find.byType(ListView), matching: find.text('INFO')),
         findsOneWidget,
       );
       expect(
@@ -77,7 +74,9 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Errors tab filters exclusively to error and critical levels', (tester) async {
+    testWidgets('Errors tab filters exclusively to error and critical levels', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.info, 'Normal info');
       controller.log(DebugLogLevel.warning, 'Normal warning');
@@ -152,41 +151,46 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Search clear icon appears immediately on typing without waiting for debounce', (tester) async {
-      final controller = DebugBubbleController();
-      controller.log(DebugLogLevel.info, 'Sample text');
+    testWidgets(
+      'Search clear icon appears immediately on typing without waiting for debounce',
+      (tester) async {
+        final controller = DebugBubbleController();
+        controller.log(DebugLogLevel.info, 'Sample text');
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: LogListView(
-              controller: controller,
-              errorsOnly: false,
-              onSelectEntry: (_) {},
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: LogListView(
+                controller: controller,
+                errorsOnly: false,
+                onSelectEntry: (_) {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Initially empty: clear icon is not present
-      expect(find.byTooltip('Clear search'), findsNothing);
+        // Initially empty: clear icon is not present
+        expect(find.byTooltip('Clear search'), findsNothing);
 
-      // Type 1 character
-      await tester.enterText(find.byType(TextField), 's');
-      await tester.pump(); // Immediate frame, no duration
+        // Type 1 character
+        await tester.enterText(find.byType(TextField), 's');
+        await tester.pump(); // Immediate frame, no duration
 
-      // Clear icon must appear immediately without waiting 250ms
-      expect(find.byTooltip('Clear search'), findsOneWidget);
+        // Clear icon must appear immediately without waiting 250ms
+        expect(find.byTooltip('Clear search'), findsOneWidget);
 
-      // Clear text
-      await tester.enterText(find.byType(TextField), '');
-      await tester.pump();
-      expect(find.byTooltip('Clear search'), findsNothing);
+        // Clear text
+        await tester.enterText(find.byType(TextField), '');
+        await tester.pump();
+        expect(find.byTooltip('Clear search'), findsNothing);
 
-      controller.dispose();
-    });
+        controller.dispose();
+      },
+    );
 
-    testWidgets('Filter and search changes reset scroll position to top', (tester) async {
+    testWidgets('Filter and search changes reset scroll position to top', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       for (var i = 0; i < 40; i++) {
         controller.log(
@@ -229,7 +233,9 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Exact severity chip filtering and reset filters action', (tester) async {
+    testWidgets('Exact severity chip filtering and reset filters action', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1000, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -274,39 +280,44 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Shows empty state with reset button when filter matches nothing', (tester) async {
-      final controller = DebugBubbleController();
-      controller.log(DebugLogLevel.info, 'Sample item');
+    testWidgets(
+      'Shows empty state with reset button when filter matches nothing',
+      (tester) async {
+        final controller = DebugBubbleController();
+        controller.log(DebugLogLevel.info, 'Sample item');
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: LogListView(
-              controller: controller,
-              errorsOnly: false,
-              onSelectEntry: (_) {},
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: LogListView(
+                controller: controller,
+                errorsOnly: false,
+                onSelectEntry: (_) {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.enterText(find.byType(TextField), 'nonexistent_query');
-      await tester.pump(const Duration(milliseconds: 300));
+        await tester.enterText(find.byType(TextField), 'nonexistent_query');
+        await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('No matches for current filters'), findsOneWidget);
-      expect(find.text('Showing 0 of 1'), findsOneWidget);
+        expect(find.text('No matches for current filters'), findsOneWidget);
+        expect(find.text('Showing 0 of 1'), findsOneWidget);
 
-      // Tap Reset filters button in empty state
-      await tester.tap(find.widgetWithText(FilledButton, 'Reset filters'));
-      await tester.pumpAndSettle();
+        // Tap Reset filters button in empty state
+        await tester.tap(find.widgetWithText(FilledButton, 'Reset filters'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Sample item'), findsOneWidget);
-      expect(find.text('Showing 1 of 1'), findsOneWidget);
+        expect(find.text('Sample item'), findsOneWidget);
+        expect(find.text('Showing 1 of 1'), findsOneWidget);
 
-      controller.dispose();
-    });
+        controller.dispose();
+      },
+    );
 
-    testWidgets('Tapping entry row invokes onSelectEntry callback', (tester) async {
+    testWidgets('Tapping entry row invokes onSelectEntry callback', (
+      tester,
+    ) async {
       final controller = DebugBubbleController();
       controller.log(DebugLogLevel.error, 'Clickable error', tag: 'Test');
       DebugLogEntry? selected;

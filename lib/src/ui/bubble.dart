@@ -51,7 +51,11 @@ class _FloatingBubbleState extends State<FloatingBubble> {
         _dragPosition ?? _calculateRestingPosition(padding, insets, screenSize);
     final minY = padding.top + _margin;
     final maxY =
-        screenSize.height - padding.bottom - insets.bottom - _bubbleSize - _margin;
+        screenSize.height -
+        padding.bottom -
+        insets.bottom -
+        _bubbleSize -
+        _margin;
     final minX = padding.left + _margin;
     final maxX = screenSize.width - padding.right - _bubbleSize - _margin;
 
@@ -81,7 +85,11 @@ class _FloatingBubbleState extends State<FloatingBubble> {
 
       final minY = padding.top + _margin;
       final maxY =
-          screenSize.height - padding.bottom - insets.bottom - _bubbleSize - _margin;
+          screenSize.height -
+          padding.bottom -
+          insets.bottom -
+          _bubbleSize -
+          _margin;
       final availableHeight = (maxY - minY) > 0 ? (maxY - minY) : 1.0;
       final relativeY = (_dragPosition!.dy - minY) / availableHeight;
 
@@ -100,7 +108,11 @@ class _FloatingBubbleState extends State<FloatingBubble> {
   ) {
     final minY = padding.top + _margin;
     final maxY =
-        screenSize.height - padding.bottom - insets.bottom - _bubbleSize - _margin;
+        screenSize.height -
+        padding.bottom -
+        insets.bottom -
+        _bubbleSize -
+        _margin;
     final effectiveMaxY = maxY > minY ? maxY : minY;
     final y = minY + (_fractionalY * (effectiveMaxY - minY));
 
@@ -121,7 +133,8 @@ class _FloatingBubbleState extends State<FloatingBubble> {
         final insets = MediaQuery.viewInsetsOf(context);
 
         final position =
-            _dragPosition ?? _calculateRestingPosition(padding, insets, screenSize);
+            _dragPosition ??
+            _calculateRestingPosition(padding, insets, screenSize);
         final theme = widget.controller.config.theme;
         final bubbleColor = theme.bubbleColor ?? const Color(0xFF212121);
         final iconColor = theme.bubbleIconColor ?? Colors.white;
@@ -161,11 +174,7 @@ class _FloatingBubbleState extends State<FloatingBubble> {
                       ],
                     ),
                     child: Center(
-                      child: Icon(
-                        Icons.bug_report,
-                        color: iconColor,
-                        size: 28,
-                      ),
+                      child: Icon(Icons.bug_report, color: iconColor, size: 28),
                     ),
                   ),
                   if (errorCount > 0)

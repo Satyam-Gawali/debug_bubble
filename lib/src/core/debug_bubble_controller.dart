@@ -37,7 +37,8 @@ class DebugBubbleController extends ChangeNotifier {
     try {
       final binding = SchedulerBinding.instance;
       final phase = binding.schedulerPhase;
-      final inFrame = phase == SchedulerPhase.persistentCallbacks ||
+      final inFrame =
+          phase == SchedulerPhase.persistentCallbacks ||
           phase == SchedulerPhase.midFrameMicrotasks;
 
       if (inFrame) {
