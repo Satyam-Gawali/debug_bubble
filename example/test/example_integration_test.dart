@@ -1,7 +1,6 @@
 import 'package:debug_bubble/debug_bubble.dart';
 import 'package:debug_bubble/src/ui/bubble.dart';
 import 'package:debug_bubble/src/ui/dashboard.dart';
-import 'package:debug_bubble/src/ui/entry_detail.dart';
 import 'package:debug_bubble/src/ui/info_tab.dart';
 import 'package:debug_bubble/src/ui/log_list.dart';
 import 'package:example/main.dart';
@@ -232,7 +231,7 @@ void main() {
     });
 
     testWidgets(
-        'T3.9.6: Entry details view displays payload, JSON, and copies to clipboard',
+        'T3.9.6: Entry details view displays payload, JSON, and copies to clipboard inline',
         (tester) async {
       await tester.pumpWidget(const MyApp());
       await tester.pumpAndSettle();
@@ -249,7 +248,7 @@ void main() {
       await tester.tap(find.byType(FloatingBubble));
       await tester.pumpAndSettle();
 
-      // Tap the entry row inside LogListView
+      // Tap the entry row inside LogListView to expand inline
       final entryRow = find.descendant(
         of: find.byType(LogListView),
         matching: find.text('Database connection timeout'),
@@ -257,35 +256,22 @@ void main() {
       await tester.tap(entryRow);
       await tester.pumpAndSettle();
 
-      expect(find.byType(EntryDetailView), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(EntryDetailView),
-          matching: find.text('Database connection timeout'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(
-          of: find.byType(EntryDetailView),
-          matching: find.text('TimeoutException: 5000ms exceeded'),
-        ),
-        findsOneWidget,
-      );
+      // Verify inline expansion shows error message and copy buttons
+      expect(find.text('TimeoutException: 5000ms exceeded'), findsOneWidget);
+      expect(find.text('JSON PAYLOAD'), findsOneWidget);
       expect(find.byTooltip('Copy entry text'), findsOneWidget);
       expect(find.byTooltip('Copy JSON'), findsOneWidget);
 
-      // Tap Copy entry text
+      // Tap Copy entry text inline
       await tester.tap(find.byTooltip('Copy entry text'));
       await tester.pumpAndSettle();
       expect(find.text('Copied entry to clipboard'), findsOneWidget);
 
-      // Back to log list
-      await tester.tap(find.byTooltip('Back to list'));
+      // Collapse inline card
+      await tester.tap(find.byTooltip('Collapse'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(EntryDetailView), findsNothing);
-      expect(find.byType(LogListView), findsOneWidget);
+      expect(find.text('JSON PAYLOAD'), findsNothing);
     });
 
     testWidgets(

@@ -209,8 +209,11 @@ void main() {
       expect(find.text('Selectable message'), findsOneWidget);
       expect(find.byType(EntryDetailView), findsNothing);
 
-      // Tap on row
+      // Tap on row to expand inline, then tap Open full page
       await tester.tap(find.text('Selectable message'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Open full page'));
       await tester.pumpAndSettle();
 
       // Detail view is now displayed

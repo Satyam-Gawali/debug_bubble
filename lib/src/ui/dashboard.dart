@@ -212,7 +212,7 @@ class DashboardOverlayState extends State<DashboardOverlay>
               LogListView(
                 controller: widget.controller,
                 errorsOnly: false,
-                onSelectEntry: (entry) {
+                onOpenFullDetail: (entry) {
                   setState(() {
                     _selectedEntry = entry;
                   });
@@ -224,7 +224,7 @@ class DashboardOverlayState extends State<DashboardOverlay>
               LogListView(
                 controller: widget.controller,
                 errorsOnly: true,
-                onSelectEntry: (entry) {
+                onOpenFullDetail: (entry) {
                   setState(() {
                     _selectedEntry = entry;
                   });

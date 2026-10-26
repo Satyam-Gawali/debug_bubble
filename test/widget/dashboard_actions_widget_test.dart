@@ -259,8 +259,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Clear logs'), findsNothing);
 
-      // Tap on row to open detail view
+      // Tap on row and open full detail view
       await tester.tap(find.text('Info msg'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Open full page'));
       await tester.pumpAndSettle();
       expect(find.text('Entry #1'), findsOneWidget);
 
