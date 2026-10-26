@@ -32,7 +32,7 @@ A high-performance in-app diagnostic toolkit and floating log viewer for Flutter
 
 ### IDE Terminal Console Logging
 
-<img src="https://raw.githubusercontent.com/Satyam-Gawali/debug_bubble/main/example/screenshots/console_output.png" width="100%" alt="IDE Console Output" />
+<img src="https://raw.githubusercontent.com/Satyam-Gawali/debug_bubble/main/example/screenshots/console_output.png" height="340" alt="IDE Console Output" />
 
 ---
 
