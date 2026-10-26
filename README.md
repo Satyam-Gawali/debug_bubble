@@ -24,6 +24,18 @@ A high-performance in-app diagnostic toolkit and floating log viewer for Flutter
 
 ---
 
+## Screenshots
+
+| Floating Bubble Overlay | Real-Time Dashboard | Error & Crash Stream | Detailed Stack Trace |
+|:---:|:---:|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/Satyam-Gawali/debug_bubble/main/example/screenshots/floating_bubble.jpg" width="220" alt="Floating Bubble Overlay" /> | <img src="https://raw.githubusercontent.com/Satyam-Gawali/debug_bubble/main/example/screenshots/dashboard_logs.jpg" width="220" alt="Dashboard Logs" /> | <img src="https://raw.githubusercontent.com/Satyam-Gawali/debug_bubble/main/example/screenshots/error_stream.jpg" width="220" alt="Error Stream" /> | <img src="https://raw.githubusercontent.com/Satyam-Gawali/debug_bubble/main/example/screenshots/entry_detail.jpg" width="220" alt="Entry Detail" /> |
+
+### IDE Terminal Console Logging
+
+<img src="https://raw.githubusercontent.com/Satyam-Gawali/debug_bubble/main/example/screenshots/console_output.png" width="100%" alt="IDE Console Output" />
+
+---
+
 ## Getting Started
 
 ### Installation
