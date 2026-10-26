@@ -68,6 +68,7 @@ class _LogListViewState extends State<LogListView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         widget.onFilterChanged?.call(_buildCurrentFilter());
+        _scrollToBottomInstantly();
       }
     });
   }
@@ -82,6 +83,16 @@ class _LogListViewState extends State<LogListView> {
     _scrollController.dispose();
     _chipScrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollToBottomInstantly() {
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      setState(() {
+        _autoScroll = true;
+        _showJumpToLatest = false;
+      });
+    }
   }
 
   void _showFeedback(String message) {
@@ -272,19 +283,17 @@ class _LogListViewState extends State<LogListView> {
 
         final isNewEntry = totalCount > _lastTotalEntryCount;
         if (isNewEntry) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            _lastTotalEntryCount = totalCount;
-
-            // Stick to latest logs at the bottom if auto-scroll is active
-            if (_autoScroll && _scrollController.hasClients) {
+          _lastTotalEntryCount = totalCount;
+          if (_autoScroll) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || !_scrollController.hasClients) return;
               _scrollController.animateTo(
                 _scrollController.position.maxScrollExtent,
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOutCubic,
               );
-            }
-          });
+            });
+          }
         }
 
         return Stack(
@@ -537,6 +546,7 @@ class _LogListViewState extends State<LogListView> {
         return InkWell(
           onTap: () {
             final willExpand = !isExpanded;
+
             setState(() {
               _expandedEntryId = willExpand ? entry.id : null;
               // User actively inspected an entry: prevent background live logs
@@ -549,7 +559,7 @@ class _LogListViewState extends State<LogListView> {
             widget.onSelectEntry?.call(entry);
 
             if (willExpand) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+              Future.delayed(const Duration(milliseconds: 220), () {
                 if (!mounted ||
                     !rowContext.mounted ||
                     _expandedEntryId != entry.id) {
@@ -565,6 +575,7 @@ class _LogListViewState extends State<LogListView> {
               });
             }
           },
+
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(

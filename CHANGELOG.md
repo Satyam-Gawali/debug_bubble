@@ -5,6 +5,12 @@ All notable changes to `debug_bubble` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-10-26
+
+### Fixed
+- **Log Entry Auto-Centering:** Replaced aggressive viewport auto-centering upon log card expansion with `ScrollPositionAlignmentPolicy.keepVisibleAtEnd`. Fully visible items now expand in-place with zero unnecessary viewport shift.
+- **Bottom-Clipped Card Expansion:** Fixed an issue where expanding entries near or at the bottom of the log list caused expanded content to be clipped beyond the screen bounds. Viewport now smoothly scrolls just enough to align the bottom edge within the visible area.
+
 ## [0.1.0] - 2026-10-26
 
 Initial public release of `debug_bubble` — a reusable, zero-dependency Flutter debugging toolkit with an in-app floating bubble and diagnostic dashboard.

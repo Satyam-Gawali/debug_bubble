@@ -46,7 +46,7 @@ Add `debug_bubble` to your `pubspec.yaml`:
 dependencies:
   flutter:
     sdk: flutter
-  debug_bubble: ^0.1.0
+  debug_bubble: ^0.1.1
 ```
 
 Alternatively, run:

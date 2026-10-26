@@ -1,6 +1,6 @@
 name: debug_bubble
 description: "A reusable Flutter debugging toolkit with an in-app floating log viewer and error dashboard."
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/Satyam-Gawali/debug_bubble
 repository: https://github.com/Satyam-Gawali/debug_bubble
 issue_tracker: https://github.com/Satyam-Gawali/debug_bubble/issues
