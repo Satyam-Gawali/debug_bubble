@@ -335,7 +335,7 @@ void main() {
       );
 
       await tester.tap(find.text('Clickable error'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(selected, isNotNull);
       expect(selected?.message, equals('Clickable error'));

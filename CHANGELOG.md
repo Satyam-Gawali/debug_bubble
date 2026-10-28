@@ -5,6 +5,25 @@ All notable changes to `debug_bubble` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-10-29
+
+### Added
+- **Redaction Allowlist (`allowedKeys` / `allowlist`):**
+  - Added `allowedKeys` to `DebugRedactionConfig` allowing developers to explicitly mark safe fields to display (e.g., `tokenCount`, `cardType`, `secretary`, `requestId`).
+  - Implemented exact full-key matching after case and separator normalization, overriding key-based sensitive rules.
+  - Value-pattern redaction remains fully active on values within allowlisted fields (e.g., regex-detected Bearer tokens and credit cards inside allowlisted fields remain masked).
+- **Smart Key Normalization:**
+  - Case-insensitive and delimiter-agnostic key matching (`tokenCount`, `token_count`, `TOKEN_COUNT`, and `token-count` match identically).
+  - Safe handling of duplicate entries, whitespace, and empty strings without runtime or compile-time exceptions.
+
+### Fixed
+- **App Startup Crash Fix (`setState() called during build`):**
+  - Isolated root widget rebuilds in `DebugBubble` by migrating overlay rendering to `_DebugBubbleOverlayHost`.
+  - Logging within a descendant's `initState()` or `build()` method no longer marks the host application dirty or triggers framework assertions.
+  - Coalesced high-frequency log bursts safely via post-frame callbacks.
+- **Scroll & Timer Lifecycle Safety:**
+  - Replaced unmanaged timers in log list view with cancellable state timers to prevent pending timer assertions during widget disposal and widget testing.
+
 ## [0.1.1] - 2026-10-26
 
 ### Fixed

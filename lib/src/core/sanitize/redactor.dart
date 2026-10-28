@@ -9,20 +9,46 @@ import '../debug_redaction_config.dart';
 class DebugRedactor {
   /// Creates a redactor with the provided [config].
   DebugRedactor({this.config = const DebugRedactionConfig()})
-    : _normalizedSensitiveKeys = config.sensitiveKeys
-          .map(normalizeKey)
-          .where((k) => k.isNotEmpty)
-          .toSet(),
-      _normalizedSensitiveKeyTokens = config.sensitiveKeyTokens
-          .map((t) => t.toLowerCase())
-          .where((t) => t.isNotEmpty)
-          .toSet();
+    : _normalizedSensitiveKeys = _safeNormalize(config.sensitiveKeys),
+      _normalizedSensitiveKeyTokens = _safeNormalizeTokens(
+        config.sensitiveKeyTokens,
+      ),
+      _normalizedAllowedKeys = _safeNormalize(config.allowedKeys);
 
   /// The redaction configuration in effect.
   final DebugRedactionConfig config;
 
   final Set<String> _normalizedSensitiveKeys;
   final Set<String> _normalizedSensitiveKeyTokens;
+  final Set<String> _normalizedAllowedKeys;
+
+  static Set<String> _safeNormalize(Set<String>? keys) {
+    if (keys == null || keys.isEmpty) return const <String>{};
+    try {
+      final result = <String>{};
+      for (final k in keys) {
+        final norm = normalizeKey(k);
+        if (norm.isNotEmpty) result.add(norm);
+      }
+      return result;
+    } catch (_) {
+      return const <String>{};
+    }
+  }
+
+  static Set<String> _safeNormalizeTokens(Set<String>? tokens) {
+    if (tokens == null || tokens.isEmpty) return const <String>{};
+    try {
+      final result = <String>{};
+      for (final t in tokens) {
+        final norm = t.toLowerCase().trim();
+        if (norm.isNotEmpty) result.add(norm);
+      }
+      return result;
+    } catch (_) {
+      return const <String>{};
+    }
+  }
 
   /// Replacement string for redacted content.
   String get replacement => config.replacement;
@@ -56,28 +82,44 @@ class DebugRedactor {
         .toList();
   }
 
+  /// Evaluates whether [key] is present in the allowlist via exact full-key matching
+  /// after normalization.
+  bool isAllowlistedKey(String key) {
+    if (_normalizedAllowedKeys.isEmpty || key.isEmpty) return false;
+    final normalized = normalizeKey(key);
+    return _normalizedAllowedKeys.contains(normalized);
+  }
+
   /// Evaluates whether [key] is deemed sensitive per key matching rules.
   ///
   /// Evaluates:
-  /// 1. Substring match against [DebugRedactionConfig.sensitiveKeys] after normalization.
-  /// 2. Exact token match against [DebugRedactionConfig.sensitiveKeyTokens] after tokenizing.
+  /// 1. Exact full-key match against [DebugRedactionConfig.allowedKeys] after normalization.
+  ///    An exact allowlist match overrides all key-based sensitive rules.
+  /// 2. Substring match against [DebugRedactionConfig.sensitiveKeys] after normalization.
+  /// 3. Exact token match against [DebugRedactionConfig.sensitiveKeyTokens] after tokenizing.
   ///
   /// Returns `false` if [isRedactionActive] is `false`.
   bool isSensitiveKey(String key) {
     if (!isRedactionActive) return false;
     if (key.isEmpty) return false;
 
-    // 1. Normalized key substring match
     final normalized = normalizeKey(key);
-    if (normalized.isNotEmpty) {
-      for (final sensitiveKey in _normalizedSensitiveKeys) {
-        if (sensitiveKey.isNotEmpty && normalized.contains(sensitiveKey)) {
-          return true;
-        }
+    if (normalized.isEmpty) return false;
+
+    // 1. Allowlist override: exact full-key match after normalization
+    // overrides all key-based sensitive rules.
+    if (_normalizedAllowedKeys.contains(normalized)) {
+      return false;
+    }
+
+    // 2. Normalized key substring match
+    for (final sensitiveKey in _normalizedSensitiveKeys) {
+      if (sensitiveKey.isNotEmpty && normalized.contains(sensitiveKey)) {
+        return true;
       }
     }
 
-    // 2. Tokenized exact match
+    // 3. Tokenized exact match
     final tokens = tokenizeKey(key);
     for (final token in tokens) {
       if (_normalizedSensitiveKeyTokens.contains(token)) {

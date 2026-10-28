@@ -4,6 +4,7 @@ class DebugRedactionConfig {
     this.enabled = true,
     this.sensitiveKeys = defaultSensitiveKeys,
     this.sensitiveKeyTokens = defaultSensitiveKeyTokens,
+    this.allowedKeys = defaultAllowedKeys,
     this.valuePatterns = const <RegExp>[],
     this.replacement = '[REDACTED]',
   });
@@ -35,6 +36,9 @@ class DebugRedactionConfig {
     'auth',
   };
 
+  /// Default allowed keys (empty by default).
+  static const Set<String> defaultAllowedKeys = <String>{};
+
   /// Whether redaction is active. Cannot be disabled in release builds.
   final bool enabled;
 
@@ -43,6 +47,15 @@ class DebugRedactionConfig {
 
   /// Keys matched as exact tokens after tokenizing key identifiers.
   final Set<String> sensitiveKeyTokens;
+
+  /// Explicitly allowlisted keys that should NOT be redacted.
+  ///
+  /// Matches exact keys after case and separator normalization.
+  /// An exact match here overrides all key-based sensitive rules.
+  final Set<String> allowedKeys;
+
+  /// Alias for [allowedKeys].
+  Set<String> get allowlist => allowedKeys;
 
   /// Regular expression patterns matched against string values and messages.
   final List<RegExp> valuePatterns;
@@ -54,6 +67,7 @@ class DebugRedactionConfig {
     bool? enabled,
     Set<String>? sensitiveKeys,
     Set<String>? sensitiveKeyTokens,
+    Set<String>? allowedKeys,
     List<RegExp>? valuePatterns,
     String? replacement,
   }) {
@@ -61,6 +75,7 @@ class DebugRedactionConfig {
       enabled: enabled ?? this.enabled,
       sensitiveKeys: sensitiveKeys ?? this.sensitiveKeys,
       sensitiveKeyTokens: sensitiveKeyTokens ?? this.sensitiveKeyTokens,
+      allowedKeys: allowedKeys ?? this.allowedKeys,
       valuePatterns: valuePatterns ?? this.valuePatterns,
       replacement: replacement ?? this.replacement,
     );

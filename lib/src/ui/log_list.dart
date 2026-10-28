@@ -50,6 +50,7 @@ class _LogListViewState extends State<LogListView> {
 
   Timer? _debounceTimer;
   Timer? _feedbackTimer;
+  Timer? _expandScrollTimer;
   String? _feedbackMessage;
   String _searchQuery = '';
   final Set<DebugLogLevel> _selectedLevels = <DebugLogLevel>{};
@@ -77,6 +78,7 @@ class _LogListViewState extends State<LogListView> {
   void dispose() {
     _debounceTimer?.cancel();
     _feedbackTimer?.cancel();
+    _expandScrollTimer?.cancel();
     _searchController.removeListener(_onSearchTextChanged);
     _searchController.dispose();
     _scrollController.removeListener(_onScroll);
@@ -559,7 +561,8 @@ class _LogListViewState extends State<LogListView> {
             widget.onSelectEntry?.call(entry);
 
             if (willExpand) {
-              Future.delayed(const Duration(milliseconds: 220), () {
+              _expandScrollTimer?.cancel();
+              _expandScrollTimer = Timer(const Duration(milliseconds: 220), () {
                 if (!mounted ||
                     !rowContext.mounted ||
                     _expandedEntryId != entry.id) {
@@ -573,6 +576,8 @@ class _LogListViewState extends State<LogListView> {
                       ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
                 );
               });
+            } else {
+              _expandScrollTimer?.cancel();
             }
           },
 

@@ -33,24 +33,26 @@ class DebugBubbleController extends ChangeNotifier {
 
   void _scheduleNotification() {
     if (_isDisposed || !isActive) return;
+    if (_notificationScheduled) return;
 
     try {
-      final binding = SchedulerBinding.instance;
+      final binding = WidgetsBinding.instance;
       final phase = binding.schedulerPhase;
+      final hasMountedWidgets = binding.rootElement != null;
       final inFrame =
           phase == SchedulerPhase.persistentCallbacks ||
-          phase == SchedulerPhase.midFrameMicrotasks;
+          phase == SchedulerPhase.midFrameMicrotasks ||
+          hasMountedWidgets;
 
       if (inFrame) {
-        if (!_notificationScheduled) {
-          _notificationScheduled = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _notificationScheduled = false;
-            if (!_isDisposed && isActive) {
-              notifyListeners();
-            }
-          });
-        }
+        _notificationScheduled = true;
+        binding.addPostFrameCallback((_) {
+          _notificationScheduled = false;
+          if (!_isDisposed && isActive) {
+            notifyListeners();
+          }
+        });
+        binding.scheduleFrame();
         return;
       }
     } catch (_) {

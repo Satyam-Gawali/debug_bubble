@@ -147,7 +147,7 @@ class ErrorHookRegistry {
             message = 'FlutterError (${details.exception.runtimeType})';
           }
 
-          for (final sink in _sinks) {
+          for (final sink in _sinks.toList()) {
             sink.logUncaught(
               DebugLogLevel.error,
               message,
@@ -184,7 +184,7 @@ class ErrorHookRegistry {
             message = 'PlatformError (${error.runtimeType})';
           }
 
-          for (final sink in _sinks) {
+          for (final sink in _sinks.toList()) {
             sink.logUncaught(
               DebugLogLevel.critical,
               message,

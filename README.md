@@ -46,7 +46,7 @@ Add `debug_bubble` to your `pubspec.yaml`:
 dependencies:
   flutter:
     sdk: flutter
-  debug_bubble: ^0.1.1
+  debug_bubble: ^0.2.0
 ```
 
 Alternatively, run:
@@ -234,10 +234,46 @@ Configures data sanitization across messages, metadata, and JSON payloads:
 | Property | Type | Default Value | Description |
 |---|---|---|---|
 | `enabled` | `bool` | `true` | Controls active redaction. Enforced active in release mode as defense-in-depth. |
-| `sensitiveKeys` | `Set<String>` | `{'password', 'token', 'auth', 'secret', ...}` | Key substrings that trigger value replacement with `[REDACTED]`. |
-| `sensitiveKeyTokens` | `Set<String>` | `{'pwd', 'apikey', 'bearer', ...}` | Exact tokens checked against compound camelCase and snake_case keys. |
-| `valuePatterns` | `List<RegExp>` | `[]` | Regex patterns executed against string values (e.g., credit card or tax identifiers). |
+| `sensitiveKeys` | `Set<String>` | `defaultSensitiveKeys` | Key substrings that trigger value replacement with `[REDACTED]`. |
+| `sensitiveKeyTokens` | `Set<String>` | `defaultSensitiveKeyTokens` | Exact tokens checked against compound camelCase, snake_case, and kebab-case keys. |
+| `allowedKeys` | `Set<String>` | `defaultAllowedKeys` (`{}`) | Explicit allowlist. An exact match after normalization overrides sensitive key rules. |
+| `valuePatterns` | `List<RegExp>` | `[]` | Regex patterns executed against string values (e.g., credit cards, Bearer tokens). |
 | `replacement` | `String` | `'[REDACTED]'` | Replacement mask injected for sanitized data. |
+
+#### Built-in Security Defaults
+`debug_bubble` ships with carefully tuned security defaults:
+
+* **`defaultSensitiveKeys` (Substring matching):**
+  `'password'`, `'passwd'`, `'passphrase'`, `'secret'`, `'token'`, `'authorization'`, `'cookie'`, `'apikey'`, `'privatekey'`, `'accesskey'`, `'credential'`
+  *(Automatically masks compound fields like `userPassword`, `accessToken`, `refresh_token`, `firebase_token`, `confirmPassword`)*.
+* **`defaultSensitiveKeyTokens` (Exact token boundary matching):**
+  `'pin'`, `'otp'`, `'cvv'`, `'cvc'`, `'ssn'`, `'card'`, `'session'`, `'auth'`
+
+#### Allowlist Usage (`allowedKeys`)
+Use `allowedKeys` to explicitly display non-sensitive fields that contain sensitive root words (such as LLM metric `tokenCount`, card metadata `cardType`, or business role `secretary`):
+
+```dart
+DebugLog.init(
+  DebugBubbleConfig(
+    redaction: DebugRedactionConfig(
+      // Note: Do not prefix this set with 'const' if adding keys that overlap with defaults
+      sensitiveKeys: {
+        ...DebugRedactionConfig.defaultSensitiveKeys,
+        'custom_internal_id',
+      },
+      allowedKeys: {
+        'todayToken',  // Safely displayed even though 'token' is in sensitiveKeys
+        'tokenCount',  // Matches tokenCount, token_count, TOKEN_COUNT identically
+        'cardType',    // Matches cardType, card_type, CARD-TYPE identically
+      },
+      replacement: '[REDACTED]',
+    ),
+  ),
+);
+```
+
+> **Tip regarding `const` sets:**
+> If you combine `...DebugRedactionConfig.defaultSensitiveKeys` with custom keys, avoid adding a `const` literal before the set (e.g. use `sensitiveKeys: { ... }` instead of `sensitiveKeys: const { ... }`). In Dart, duplicate elements inside a `const` set literal trigger a compile-time error (`Two elements in a constant set literal can't be equal`). Using a standard runtime set literal allows Dart to deduplicate entries automatically without error.
 
 ---
 

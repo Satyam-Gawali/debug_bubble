@@ -309,4 +309,199 @@ void main() {
       });
     },
   );
+
+  group('Redaction Allowlist (Exact Normalized Matching & Overrides)', () {
+    test('Backward compatibility: Default config has empty allowlist and preserves existing behavior', () {
+      const config = DebugRedactionConfig();
+      expect(config.allowedKeys, isEmpty);
+      expect(config.allowlist, isEmpty);
+
+      final redactor = DebugRedactor(config: config);
+      expect(redactor.isSensitiveKey('password'), isTrue);
+      expect(redactor.isSensitiveKey('cardType'), isTrue);
+      expect(redactor.isSensitiveKey('tokenCount'), isTrue);
+      expect(redactor.isSensitiveKey('secretary'), isTrue);
+      expect(redactor.isSensitiveKey('username'), isFalse);
+    });
+
+    test('Exact normalized allowlist matching for tokenCount, TOKENCOUNT, and token_count', () {
+      final config = const DebugRedactionConfig(allowedKeys: {'tokenCount'});
+      final redactor = DebugRedactor(config: config);
+
+      // Exact match after normalization
+      expect(redactor.isSensitiveKey('tokenCount'), isFalse);
+      expect(redactor.isSensitiveKey('TOKENCOUNT'), isFalse);
+      expect(redactor.isSensitiveKey('token_count'), isFalse);
+      expect(redactor.isSensitiveKey('token-count'), isFalse);
+    });
+
+    test('Similar keys do NOT match allowlist and remain redacted (totalTokenCount, tokenCounter)', () {
+      final config = const DebugRedactionConfig(allowedKeys: {'tokenCount'});
+      final redactor = DebugRedactor(config: config);
+
+      // Neither totalTokenCount nor tokenCounter is an exact match for tokenCount
+      // Both contain substring 'token' so they remain sensitive
+      expect(redactor.isSensitiveKey('totalTokenCount'), isTrue);
+      expect(redactor.isSensitiveKey('tokenCounter'), isTrue);
+      expect(redactor.isSensitiveKey('tokensCount'), isTrue);
+      expect(redactor.isSensitiveKey('myTokenCount'), isTrue);
+    });
+
+    test('Case and separator normalization for requestId and cardType', () {
+      final config = const DebugRedactionConfig(
+        allowedKeys: {'requestId', 'card-type'},
+      );
+      final redactor = DebugRedactor(config: config);
+
+      // requestId variations
+      expect(redactor.isSensitiveKey('requestId'), isFalse);
+      expect(redactor.isSensitiveKey('request_id'), isFalse);
+      expect(redactor.isSensitiveKey('REQUEST_ID'), isFalse);
+
+      // cardType variations
+      expect(redactor.isSensitiveKey('cardType'), isFalse);
+      expect(redactor.isSensitiveKey('card_type'), isFalse);
+      expect(redactor.isSensitiveKey('CARD-TYPE'), isFalse);
+      expect(redactor.isSensitiveKey('CARDTYPE'), isFalse);
+
+      // Other card keys remain redacted
+      expect(redactor.isSensitiveKey('cardNumber'), isTrue);
+    });
+
+    test('Allowlist overrides substring matches from sensitiveKeys', () {
+      final config = const DebugRedactionConfig(
+        allowedKeys: {'secretary', 'tokenizer', 'tokenCount'},
+      );
+      final redactor = DebugRedactor(config: config);
+
+      // 'secretary' matches substring 'secret', 'tokenizer' & 'tokenCount' match 'token'
+      // All are successfully unmasked by exact allowlist match
+      expect(redactor.isSensitiveKey('secretary'), isFalse);
+      expect(redactor.isSensitiveKey('tokenizer'), isFalse);
+      expect(redactor.isSensitiveKey('tokenCount'), isFalse);
+
+      // Other keys containing 'secret' or 'token' remain redacted
+      expect(redactor.isSensitiveKey('secret'), isTrue);
+      expect(redactor.isSensitiveKey('my_secret'), isTrue);
+      expect(redactor.isSensitiveKey('token'), isTrue);
+      expect(redactor.isSensitiveKey('accessToken'), isTrue);
+    });
+
+    test('Allowlist overrides token matches from sensitiveKeyTokens', () {
+      final config = const DebugRedactionConfig(
+        allowedKeys: {'cardType', 'sessionDuration'},
+      );
+      final redactor = DebugRedactor(config: config);
+
+      expect(redactor.isSensitiveKey('cardType'), isFalse);
+      expect(redactor.isSensitiveKey('sessionDuration'), isFalse);
+
+      // Other token matches remain sensitive
+      expect(redactor.isSensitiveKey('userPin'), isTrue);
+      expect(redactor.isSensitiveKey('userOtp'), isTrue);
+      expect(redactor.isSensitiveKey('sessionId'), isTrue);
+    });
+
+    test('Allowlist overrides all rules when explicitly specified by developer (including password)', () {
+      final config = const DebugRedactionConfig(allowedKeys: {'password'});
+      final redactor = DebugRedactor(config: config);
+
+      // Explicitly allowlisted password key is unmasked
+      expect(redactor.isSensitiveKey('password'), isFalse);
+      expect(redactor.isSensitiveKey('PASSWORD'), isFalse);
+
+      // Non-allowlisted sensitive keys remain strictly redacted
+      expect(redactor.isSensitiveKey('userPassword'), isTrue);
+      expect(redactor.isSensitiveKey('accessToken'), isTrue);
+      expect(redactor.isSensitiveKey('pin'), isTrue);
+    });
+
+    test('Nested JSON: Allowlisted fields are preserved at all depths while sensitive fields are masked', () {
+      final config = const DebugRedactionConfig(
+        allowedKeys: {'cardType', 'tokenCount'},
+      );
+      final redactor = DebugRedactor(config: config);
+
+      final payload = {
+        'analytics': {
+          'model': 'gpt-4',
+          'tokenCount': 1500,
+          'totalTokenCount': 2000,
+        },
+        'payment': {
+          'cardType': 'Visa',
+          'cardNumber': '4111222233334444',
+          'cvv': '123',
+        },
+        'user': {'password': 'SuperSecret123'},
+      };
+
+      final sanitized = redactor.redactPayload(payload) as Map<String, Object?>;
+      final analytics = sanitized['analytics'] as Map<String, Object?>;
+      final payment = sanitized['payment'] as Map<String, Object?>;
+      final user = sanitized['user'] as Map<String, Object?>;
+
+      // Allowlisted fields preserved
+      expect(analytics['tokenCount'], 1500);
+      expect(payment['cardType'], 'Visa');
+
+      // Non-allowlisted sensitive fields remain redacted
+      expect(analytics['totalTokenCount'], '[REDACTED]');
+      expect(payment['cardNumber'], '[REDACTED]');
+      expect(payment['cvv'], '[REDACTED]');
+      expect(user['password'], '[REDACTED]');
+    });
+
+    test('Value patterns still execute on allowlisted field values (does not disable pattern protection)', () {
+      final config = DebugRedactionConfig(
+        allowedKeys: const {'userBio', 'cardType'},
+        valuePatterns: [
+          RegExp(r'Bearer\s+[A-Za-z0-9\-_.]+'),
+          RegExp(r'\b\d{4}-\d{4}-\d{4}-\d{4}\b'),
+        ],
+      );
+      final redactor = DebugRedactor(config: config);
+
+      final payload = {
+        'cardType': 'Visa 1111-2222-3333-4444',
+        'userBio': 'Bio with Bearer eyJhbGciOi.token',
+      };
+
+      final sanitized = redactor.redactPayload(payload) as Map<String, Object?>;
+
+      // The field was allowed (not completely replaced with '[REDACTED]'),
+      // but value patterns were still applied to the contents!
+      expect(sanitized['cardType'], 'Visa [REDACTED]');
+      expect(sanitized['userBio'], 'Bio with [REDACTED]');
+    });
+
+    test(
+      'Safe handling of duplicate, empty, and invalid entries without crashing',
+      () {
+        final config = DebugRedactionConfig(
+          allowedKeys: {
+            'tokenCount',
+            'token_count',
+            'TOKENCOUNT',
+            '',
+            '   ',
+            '---',
+          },
+        );
+        final redactor = DebugRedactor(config: config);
+
+        expect(redactor.isSensitiveKey('tokenCount'), isFalse);
+        expect(redactor.isSensitiveKey('token_count'), isFalse);
+        expect(redactor.isSensitiveKey('password'), isTrue);
+        expect(redactor.isSensitiveKey(''), isFalse);
+      },
+    );
+
+    test('copyWith safely updates allowedKeys', () {
+      const initial = DebugRedactionConfig();
+      final updated = initial.copyWith(allowedKeys: {'cardType'});
+      expect(updated.allowedKeys, {'cardType'});
+      expect(updated.allowlist, {'cardType'});
+    });
+  });
 }

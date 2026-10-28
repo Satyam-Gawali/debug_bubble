@@ -29,7 +29,6 @@ class DebugBubble extends StatefulWidget {
 class _DebugBubbleState extends State<DebugBubble> with WidgetsBindingObserver {
   final GlobalKey<DashboardOverlayState> _dashboardKey =
       GlobalKey<DashboardOverlayState>();
-  DebugBubbleController? _subscribedController;
 
   DebugBubbleController? get _effectiveController =>
       widget.controller ?? DebugLog.controller;
@@ -38,95 +37,50 @@ class _DebugBubbleState extends State<DebugBubble> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _subscribe();
+    if (widget.controller == null) {
+      DebugLog.defaultControllerNotifier.addListener(
+        _onDefaultControllerChanged,
+      );
+    }
   }
 
   @override
   void didUpdateWidget(DebugBubble oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller) {
-      _resubscribe();
-    }
-  }
-
-  void _subscribe() {
-    // If following the default controller, listen for default controller replacements (L-6)
-    if (widget.controller == null) {
-      DebugLog.defaultControllerNotifier.addListener(
-        _onDefaultControllerChanged,
-      );
-    }
-    _bindController(_effectiveController);
-  }
-
-  void _unsubscribe() {
-    DebugLog.defaultControllerNotifier.removeListener(
-      _onDefaultControllerChanged,
-    );
-    _unbindController();
-  }
-
-  void _resubscribe() {
-    _unsubscribe();
-    _subscribe();
-  }
-
-  void _bindController(DebugBubbleController? controller) {
-    if (_subscribedController == controller) return;
-    _unbindController();
-    if (controller != null && !controller.isDisposed) {
-      _subscribedController = controller;
-      controller.addListener(_onControllerNotified);
-    }
-  }
-
-  void _unbindController() {
-    if (_subscribedController != null) {
-      try {
-        _subscribedController!.removeListener(_onControllerNotified);
-      } catch (_) {
-        // Ignored if notifier was already disposed
+      if (oldWidget.controller == null) {
+        DebugLog.defaultControllerNotifier.removeListener(
+          _onDefaultControllerChanged,
+        );
       }
-      _subscribedController = null;
+      if (widget.controller == null) {
+        DebugLog.defaultControllerNotifier.addListener(
+          _onDefaultControllerChanged,
+        );
+      }
+      _safeRebuild();
     }
   }
-
-  bool _rebuildScheduled = false;
 
   void _onDefaultControllerChanged() {
-    _bindController(_effectiveController);
-    _onControllerNotified();
+    _safeRebuild();
   }
 
-  void _onControllerNotified() {
-    if (_subscribedController?.isDisposed == true) {
-      _unbindController();
-    }
+  void _safeRebuild() {
     if (!mounted) return;
-
     try {
-      final binding = SchedulerBinding.instance;
+      final binding = WidgetsBinding.instance;
       final phase = binding.schedulerPhase;
       final inFrame =
           phase == SchedulerPhase.persistentCallbacks ||
           phase == SchedulerPhase.midFrameMicrotasks;
-
       if (inFrame) {
-        if (!_rebuildScheduled) {
-          _rebuildScheduled = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _rebuildScheduled = false;
-            if (mounted) {
-              setState(() {});
-            }
-          });
-        }
+        binding.addPostFrameCallback((_) {
+          if (mounted) setState(() {});
+        });
         return;
       }
-    } catch (_) {
-      // In isolated environments without a scheduler binding, fall through
-    }
-
+    } catch (_) {}
     setState(() {});
   }
 
@@ -148,8 +102,11 @@ class _DebugBubbleState extends State<DebugBubble> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _rebuildScheduled = false;
-    _unsubscribe();
+    if (widget.controller == null) {
+      DebugLog.defaultControllerNotifier.removeListener(
+        _onDefaultControllerChanged,
+      );
+    }
     // Widgets never dispose controllers (L-7)
     super.dispose();
   }
@@ -167,11 +124,41 @@ class _DebugBubbleState extends State<DebugBubble> with WidgetsBindingObserver {
       fit: StackFit.passthrough,
       children: [
         widget.child,
-        if (controller.isDashboardOpen)
-          DashboardOverlay(key: _dashboardKey, controller: controller)
-        else
-          FloatingBubble(controller: controller),
+        _DebugBubbleOverlayHost(
+          controller: controller,
+          dashboardKey: _dashboardKey,
+        ),
       ],
+    );
+  }
+}
+
+/// Isolated host for the floating bubble and dashboard overlay.
+///
+/// Reacts to controller changes (opening/closing dashboard and active state)
+/// without rebuilding the host application subtree in [DebugBubble].
+class _DebugBubbleOverlayHost extends StatelessWidget {
+  const _DebugBubbleOverlayHost({
+    required this.controller,
+    required this.dashboardKey,
+  });
+
+  final DebugBubbleController controller;
+  final GlobalKey<DashboardOverlayState> dashboardKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        if (!controller.isActive) {
+          return const SizedBox.shrink();
+        }
+        if (controller.isDashboardOpen) {
+          return DashboardOverlay(key: dashboardKey, controller: controller);
+        }
+        return FloatingBubble(controller: controller);
+      },
     );
   }
 }
