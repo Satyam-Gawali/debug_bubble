@@ -363,10 +363,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: LogListView(
-                controller: controller,
-                errorsOnly: false,
-              ),
+              body: LogListView(controller: controller, errorsOnly: false),
             ),
           ),
         );
