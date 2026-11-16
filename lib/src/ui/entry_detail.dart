@@ -92,6 +92,21 @@ class _EntryDetailViewState extends State<EntryDetailView> {
     }
   }
 
+  String _formatFullLocalTime(DateTime time) {
+    final local = time.toLocal();
+    final y = local.year;
+    final m = local.month.toString().padLeft(2, '0');
+    final d = local.day.toString().padLeft(2, '0');
+    final hour24 = local.hour;
+    final hour12 = hour24 == 0 ? 12 : (hour24 > 12 ? hour24 - 12 : hour24);
+    final period = hour24 >= 12 ? 'PM' : 'AM';
+    final h = hour12.toString().padLeft(2, '0');
+    final min = local.minute.toString().padLeft(2, '0');
+    final sec = local.second.toString().padLeft(2, '0');
+    final ms = local.millisecond.toString().padLeft(3, '0');
+    return '$y-$m-$d $h:$min:$sec.$ms $period';
+  }
+
   @override
   Widget build(BuildContext context) {
     final entry = widget.entry;
@@ -233,7 +248,7 @@ class _EntryDetailViewState extends State<EntryDetailView> {
                           ),
                         ),
                         Text(
-                          'Local: ${entry.timestamp.toLocal()}',
+                          'Local: ${_formatFullLocalTime(entry.timestamp)}',
                           style: TextStyle(
                             fontSize: 11,
                             color: theme.textTheme.bodySmall?.color,

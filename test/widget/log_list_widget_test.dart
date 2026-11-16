@@ -343,5 +343,57 @@ void main() {
 
       controller.dispose();
     });
+
+    testWidgets(
+      'Row header layout handles narrow viewport and long tag without overflow, formatting time as mm:ss.ms and expanding with local AM/PM',
+      (tester) async {
+        tester.view.physicalSize = const Size(320, 600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final controller = DebugBubbleController();
+        controller.log(
+          DebugLogLevel.error,
+          'Test long tag message',
+          tag: 'VERY_LONG_DOMAIN',
+          subTag: 'VeryLongSubdomainControllerWithManyWords',
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: LogListView(
+                controller: controller,
+                errorsOnly: false,
+              ),
+            ),
+          ),
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(LogListView), findsOneWidget);
+
+        // Check compact timestamp format (mm:ss.ms)
+        expect(
+          find.textContaining(RegExp(r'^\d{2}:\d{2}\.\d{3}$')),
+          findsOneWidget,
+        );
+
+        // Tap to expand and verify full local timestamp with AM/PM
+        await tester.tap(find.text('Test long tag message'));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(
+          find.textContaining(
+            RegExp(r'\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+(AM|PM)'),
+          ),
+          findsOneWidget,
+        );
+
+        controller.dispose();
+      },
+    );
   });
 }

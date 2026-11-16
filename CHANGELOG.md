@@ -5,6 +5,16 @@ All notable changes to `debug_bubble` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-11-16
+
+### Fixed
+- **Header Layout Overflow:** Fixed `RenderFlex overflowed by XX pixels` on narrow viewports or long tags by wrapping the tag chip in `Flexible` with text ellipsis.
+
+### Changed
+- **Timestamp Display:**
+  - Collapsed log cards now show a compact, cleaner timestamp formatted as `mm:ss.SSS` (e.g. `34:51.828`).
+  - Expanded log details and entry view now display the full local timestamp with 12-hour AM/PM format (`YYYY-MM-DD hh:mm:ss.SSS AM/PM`).
+
 ## [0.2.0] - 2026-10-29
 
 ### Added

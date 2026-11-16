@@ -232,10 +232,26 @@ class _LogListViewState extends State<LogListView> {
   }
 
   String _formatTime(DateTime time) {
-    final h = time.hour.toString().padLeft(2, '0');
-    final m = time.minute.toString().padLeft(2, '0');
-    final s = time.second.toString().padLeft(2, '0');
-    return '$h:$m:$s';
+    final local = time.toLocal();
+    final m = local.minute.toString().padLeft(2, '0');
+    final s = local.second.toString().padLeft(2, '0');
+    final ms = local.millisecond.toString().padLeft(3, '0');
+    return '$m:$s.$ms';
+  }
+
+  String _formatFullLocalTime(DateTime time) {
+    final local = time.toLocal();
+    final y = local.year;
+    final m = local.month.toString().padLeft(2, '0');
+    final d = local.day.toString().padLeft(2, '0');
+    final hour24 = local.hour;
+    final hour12 = hour24 == 0 ? 12 : (hour24 > 12 ? hour24 - 12 : hour24);
+    final period = hour24 >= 12 ? 'PM' : 'AM';
+    final h = hour12.toString().padLeft(2, '0');
+    final min = local.minute.toString().padLeft(2, '0');
+    final sec = local.second.toString().padLeft(2, '0');
+    final ms = local.millisecond.toString().padLeft(3, '0');
+    return '$y-$m-$d $h:$min:$sec.$ms $period';
   }
 
   String _prettyJson(Object? data) {
@@ -594,58 +610,68 @@ class _LogListViewState extends State<LogListView> {
               children: [
                 Row(
                   children: [
-                    // Level badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: color.withAlpha(25),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: color.withAlpha(80)),
-                      ),
-                      child: Text(
-                        entry.level.name.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
+                    Expanded(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Level badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: color.withAlpha(25),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: color.withAlpha(80)),
+                            ),
+                            child: Text(
+                              entry.level.name.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          // Timestamp (mm:ss.ms)
+                          Text(
+                            formattedTime,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                              color: theme.textTheme.bodySmall?.color,
+                            ),
+                          ),
+                          // Tag / subTag chip
+                          if (entry.tag != null || entry.subTag != null) ...[
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      theme.colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: Text(
+                                  entry.subTag != null
+                                      ? '${entry.tag ?? ""}/${entry.subTag}'
+                                      : entry.tag!,
+                                  style: const TextStyle(fontSize: 10),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     const SizedBox(width: 6),
-                    // Timestamp
-                    Text(
-                      formattedTime,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'monospace',
-                        color: theme.textTheme.bodySmall?.color,
-                      ),
-                    ),
-                    // Tag / subTag chip
-                    if (entry.tag != null || entry.subTag != null) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: Text(
-                          entry.subTag != null
-                              ? '${entry.tag ?? ""}/${entry.subTag}'
-                              : entry.tag!,
-                          style: const TextStyle(fontSize: 10),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                    const Spacer(),
                     if (entry.error != null) ...[
                       const Icon(Icons.error, size: 14, color: Colors.red),
                       const SizedBox(width: 4),
@@ -723,6 +749,29 @@ class _LogListViewState extends State<LogListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Full local timestamp with AM/PM (not UTC)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            children: [
+              Icon(
+                Icons.schedule_outlined,
+                size: 13,
+                color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                _formatFullLocalTime(entry.timestamp),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w500,
+                  color: theme.textTheme.bodySmall?.color,
+                ),
+              ),
+            ],
+          ),
+        ),
         // Error details section
         if (entry.error != null) ...[
           Container(
