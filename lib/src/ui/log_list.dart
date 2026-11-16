@@ -760,13 +760,19 @@ class _LogListViewState extends State<LogListView> {
                 color: theme.textTheme.bodySmall?.color?.withAlpha(180),
               ),
               const SizedBox(width: 5),
-              Text(
-                _formatFullLocalTime(entry.timestamp),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontFamily: 'monospace',
-                  fontWeight: FontWeight.w500,
-                  color: theme.textTheme.bodySmall?.color,
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _formatFullLocalTime(entry.timestamp),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w500,
+                      color: theme.textTheme.bodySmall?.color,
+                    ),
+                  ),
                 ),
               ),
             ],

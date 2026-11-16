@@ -274,7 +274,7 @@ void main() {
         expect(find.text('Copied entry to clipboard'), findsOneWidget);
 
         // Collapse inline card
-        await tester.tap(find.byTooltip('Collapse'));
+        await tester.tap(entryRow);
         await tester.pumpAndSettle();
 
         expect(find.text('JSON PAYLOAD'), findsNothing);
